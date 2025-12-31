@@ -1,7 +1,12 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from app.services.auth_service import hash_password, verify_password, create_access_token
+from app.services.auth_service import (
+    hash_password,
+    verify_password,
+    create_access_token,
+    get_current_user  
+)
 from app.core.database import get_db
 from app.models.models import User
 from datetime import datetime
@@ -67,13 +72,11 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
 @router.get("/me")
 def get_user_info(db: Session = Depends(get_db), email: str = Depends(get_current_user)):
     """Get current user information including plan"""
-    from app.core.middleware import get_current_user
     
     db_user = db.query(User).filter(User.email == email).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # Reset monthly counter if needed
     current_date = datetime.now()
     if db_user.last_reset.month != current_date.month or db_user.last_reset.year != current_date.year:
         db_user.meetings_this_month = 0
