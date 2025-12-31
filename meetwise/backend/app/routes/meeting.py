@@ -1,15 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 from app.services.ai_processing import process_meeting_notes
 from app.core.middleware import get_current_user
+from app.core.database import get_db
+from app.models.models import User, Meeting as MeetingModel
 from typing import Optional, List
 from datetime import datetime
 import uuid
 
 router = APIRouter(prefix="/api/meetings", tags=["meetings"])
-
-# In-memory database for meetings
-meetings_db = {}
 
 class MeetingCreate(BaseModel):
     title: str
@@ -29,119 +29,155 @@ class MeetingResponse(BaseModel):
     action_items: List[ActionItem]
     created_at: str
     user_email: str
+    
+    class Config:
+        from_attributes = True
 
 @router.post("", response_model=MeetingResponse)
-def create_meeting(meeting: MeetingCreate, user_email: str = Depends(get_current_user)):
+def create_meeting(
+    meeting: MeetingCreate, 
+    db: Session = Depends(get_db),
+    email: str = Depends(get_current_user)
+):
     """
     Create a new meeting and process it with AI.
-    Requires authentication. Free users limited to 5 meetings/month.
+    Free users limited to 5 meetings/month.
     """
-    # Import here to avoid circular import
-    from app.routes.auth import users_db, user_usage_db
-    from datetime import datetime
-    
-    # Get user plan
-    user = users_db.get(user_email)
+    # Get user
+    user = db.query(User).filter(User.email == email).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    user_plan = user.get("plan", "free")
-    
     # Check usage limits for free plan
-    if user_plan == "free":
-        usage = user_usage_db.get(user_email, {"meetings_this_month": 0})
-        
-        # Reset monthly counter if needed (simple month check)
-        last_reset = usage.get("last_reset", datetime.now().isoformat())
-        last_reset_date = datetime.fromisoformat(last_reset)
+    if user.plan == "free":
+        # Reset monthly counter if needed
         current_date = datetime.now()
+        if user.last_reset.month != current_date.month or user.last_reset.year != current_date.year:
+            user.meetings_this_month = 0
+            user.last_reset = current_date
+            db.commit()
         
-        # If month changed, reset counter
-        if last_reset_date.month != current_date.month or last_reset_date.year != current_date.year:
-            usage["meetings_this_month"] = 0
-            usage["last_reset"] = current_date.isoformat()
-        
-        # Check if limit reached
-        if usage["meetings_this_month"] >= 5:
+        # Check limit
+        if user.meetings_this_month >= 5:
             raise HTTPException(
-                status_code=403, 
+                status_code=403,
                 detail="Free plan limit reached (5 meetings/month). Please upgrade to Pro for unlimited meetings."
             )
     
-    # Process meeting notes with AI
+    # Process meeting with AI
     ai_result = process_meeting_notes(meeting.title, meeting.notes)
     
-    # Generate unique ID
+    # Create meeting
     meeting_id = str(uuid.uuid4())
+    db_meeting = MeetingModel(
+        id=meeting_id,
+        title=meeting.title,
+        notes=meeting.notes,
+        summary=ai_result.get("summary", ""),
+        key_points=ai_result.get("key_points", []),
+        action_items=ai_result.get("action_items", []),
+        created_at=datetime.now(),
+        user_id=user.id
+    )
     
-    # Create meeting record
-    meeting_data = {
-        "id": meeting_id,
-        "title": meeting.title,
-        "notes": meeting.notes,
-        "summary": ai_result.get("summary", ""),
-        "key_points": ai_result.get("key_points", []),
-        "action_items": ai_result.get("action_items", []),
-        "created_at": datetime.now().isoformat(),
-        "user_email": user_email
-    }
-    
-    # Store in database
-    meetings_db[meeting_id] = meeting_data
+    db.add(db_meeting)
     
     # Update usage counter for free users
-    if user_plan == "free":
-        usage = user_usage_db.get(user_email, {"meetings_this_month": 0, "last_reset": datetime.now().isoformat()})
-        usage["meetings_this_month"] = usage.get("meetings_this_month", 0) + 1
-        user_usage_db[user_email] = usage
+    if user.plan == "free":
+        user.meetings_this_month += 1
     
-    return meeting_data
+    db.commit()
+    db.refresh(db_meeting)
+    
+    return MeetingResponse(
+        id=db_meeting.id,
+        title=db_meeting.title,
+        notes=db_meeting.notes,
+        summary=db_meeting.summary,
+        key_points=db_meeting.key_points,
+        action_items=db_meeting.action_items,
+        created_at=db_meeting.created_at.isoformat(),
+        user_email=email
+    )
 
 @router.get("", response_model=List[MeetingResponse])
-def list_meetings(user_email: str = Depends(get_current_user)):
-    """
-    Get all meetings for the authenticated user.
-    """
-    user_meetings = [
-        meeting for meeting in meetings_db.values()
-        if meeting["user_email"] == user_email
+def list_meetings(
+    db: Session = Depends(get_db),
+    email: str = Depends(get_current_user)
+):
+    """Get all meetings for the authenticated user."""
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    meetings = db.query(MeetingModel).filter(
+        MeetingModel.user_id == user.id
+    ).order_by(MeetingModel.created_at.desc()).all()
+    
+    return [
+        MeetingResponse(
+            id=m.id,
+            title=m.title,
+            notes=m.notes,
+            summary=m.summary,
+            key_points=m.key_points,
+            action_items=m.action_items,
+            created_at=m.created_at.isoformat(),
+            user_email=email
+        )
+        for m in meetings
     ]
-    
-    # Sort by created_at descending (newest first)
-    user_meetings.sort(key=lambda x: x["created_at"], reverse=True)
-    
-    return user_meetings
 
 @router.get("/{meeting_id}", response_model=MeetingResponse)
-def get_meeting(meeting_id: str, user_email: str = Depends(get_current_user)):
-    """
-    Get a specific meeting by ID.
-    """
-    meeting = meetings_db.get(meeting_id)
+def get_meeting(
+    meeting_id: str,
+    db: Session = Depends(get_db),
+    email: str = Depends(get_current_user)
+):
+    """Get a specific meeting by ID."""
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    meeting = db.query(MeetingModel).filter(
+        MeetingModel.id == meeting_id,
+        MeetingModel.user_id == user.id
+    ).first()
     
     if not meeting:
         raise HTTPException(status_code=404, detail="Meeting not found")
     
-    # Check if meeting belongs to user
-    if meeting["user_email"] != user_email:
-        raise HTTPException(status_code=403, detail="Not authorized to access this meeting")
-    
-    return meeting
+    return MeetingResponse(
+        id=meeting.id,
+        title=meeting.title,
+        notes=meeting.notes,
+        summary=meeting.summary,
+        key_points=meeting.key_points,
+        action_items=meeting.action_items,
+        created_at=meeting.created_at.isoformat(),
+        user_email=email
+    )
 
 @router.delete("/{meeting_id}")
-def delete_meeting(meeting_id: str, user_email: str = Depends(get_current_user)):
-    """
-    Delete a meeting.
-    """
-    meeting = meetings_db.get(meeting_id)
+def delete_meeting(
+    meeting_id: str,
+    db: Session = Depends(get_db),
+    email: str = Depends(get_current_user)
+):
+    """Delete a meeting."""
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    meeting = db.query(MeetingModel).filter(
+        MeetingModel.id == meeting_id,
+        MeetingModel.user_id == user.id
+    ).first()
     
     if not meeting:
         raise HTTPException(status_code=404, detail="Meeting not found")
     
-    # Check if meeting belongs to user
-    if meeting["user_email"] != user_email:
-        raise HTTPException(status_code=403, detail="Not authorized to delete this meeting")
-    
-    del meetings_db[meeting_id]
+    db.delete(meeting)
+    db.commit()
     
     return {"message": "Meeting deleted successfully"}
