@@ -1,5 +1,5 @@
 // API client for backend communication
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'http://localhost:8001';
 
 // Token management
 export const getToken = (): string | null => {
@@ -25,7 +25,6 @@ export const isAuthenticated = (): boolean => {
     return getToken() !== null;
 };
 
-// API request helper
 async function apiRequest(
     endpoint: string,
     options: RequestInit = {}

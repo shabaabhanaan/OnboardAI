@@ -2,11 +2,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.routes import auth, meeting, user
-from app.core.database import engine
-from app.models import models
+from app.core import database
+from app.core.database import engine, Base
+from app.models import models  # IMPORTANT: register models
 
-# Create database tables
-models.Base.metadata.create_all(bind=engine)
+# Create DB tables
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="MeetWise API",
@@ -14,7 +15,7 @@ app = FastAPI(
     version="2.0.0"
 )
 
-# CORS middleware
+# CORS for Next.js
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -26,15 +27,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
+# Routers
 app.include_router(auth.router)
-app.include_router(user.router)     # ✅ IMPORTANT
+app.include_router(user.router)
 app.include_router(meeting.router)
 
 @app.get("/health")
 def health_check():
+    db_info = database.get_database_info()
     return {
         "status": "ok",
-        "message": "MeetWise API is running",
-        "version": "2.0.0"
+        "database": db_info["type"],
+        "detail": db_info
     }
