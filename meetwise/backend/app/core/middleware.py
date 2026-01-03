@@ -3,7 +3,9 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import jwt
 from typing import Optional
 
-SECRET_KEY = "your_secret_key_here"  # Should match auth_service.py
+import os
+
+SECRET_KEY = os.getenv("SECRET_KEY", "dev_secret_key")
 ALGORITHM = "HS256"
 
 security = HTTPBearer()
