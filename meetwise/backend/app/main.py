@@ -31,6 +31,8 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(user.router)
 app.include_router(meeting.router)
+from app.routes import payment
+app.include_router(payment.router, prefix="/api/payment", tags=["payment"])
 
 @app.get("/health")
 def health_check():

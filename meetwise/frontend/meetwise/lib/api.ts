@@ -31,7 +31,7 @@ async function apiRequest(
 ): Promise<any> {
     const token = getToken();
 
-    const headers: HeadersInit = {
+    const headers: any = {
         'Content-Type': 'application/json',
         ...options.headers,
     };
@@ -85,6 +85,35 @@ export const meetings = {
             method: 'POST',
             body: JSON.stringify({ title, notes }),
         });
+    },
+
+    upload: async (file: File, title: string, notes?: string) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('title', title);
+        if (notes) {
+            formData.append('notes', notes);
+        }
+
+        // Don't set Content-Type header for FormData, browser sets it with boundary
+        const token = getToken();
+        const headers: any = {};
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/meetings/upload`, {
+            method: 'POST',
+            body: formData,
+            headers,
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ detail: 'An error occurred' }));
+            throw new Error(error.detail || 'Upload failed');
+        }
+
+        return response.json();
     },
 
     list: async () => {

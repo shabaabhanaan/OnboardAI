@@ -15,6 +15,8 @@ export default function NewMeetingPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
     if (typeof window !== "undefined" && !isAuthenticated()) {
         router.push("/login");
         return null;
@@ -26,7 +28,14 @@ export default function NewMeetingPage() {
         setLoading(true);
 
         try {
-            const meeting = await meetings.create(formData.title, formData.notes);
+            let meeting;
+            if (selectedFile) {
+                // Use upload endpoint
+                meeting = await meetings.upload(selectedFile, formData.title, formData.notes);
+            } else {
+                // Use existing create endpoint
+                meeting = await meetings.create(formData.title, formData.notes);
+            }
             router.push(`/dashboard/${meeting.id}`);
         } catch (err: any) {
             setError(err.message || "Failed to create meeting");
@@ -68,7 +77,7 @@ export default function NewMeetingPage() {
                             Create New Meeting
                         </h1>
                         <p className="text-gray-600 dark:text-gray-400">
-                            Paste your meeting notes and let AI do the heavy lifting
+                            Upload a recording or paste your meeting notes to get Started
                         </p>
                     </div>
 
@@ -95,21 +104,50 @@ export default function NewMeetingPage() {
                                 />
                             </div>
 
+                            {/* File Upload Field */}
+                            <div className="mb-6">
+                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                                    Upload Recording (Optional)
+                                </label>
+                                <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center hover:border-indigo-500 transition-colors">
+                                    <input
+                                        type="file"
+                                        accept="audio/*,video/*"
+                                        onChange={(e) => setSelectedFile(e.target.files ? e.target.files[0] : null)}
+                                        className="hidden"
+                                        id="file-upload"
+                                    />
+                                    <label
+                                        htmlFor="file-upload"
+                                        className="cursor-pointer flex flex-col items-center gap-2"
+                                    >
+                                        <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                                            <Sparkles className="w-6 h-6" />
+                                        </div>
+                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                            {selectedFile ? selectedFile.name : "Click to select a video or audio file"}
+                                        </span>
+                                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                                            Supports MP3, WAV, MP4, MOV (Max 25MB)
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+
                             {/* Notes Field */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                                    Meeting Notes
+                                    Meeting Notes (Optional)
                                 </label>
                                 <textarea
-                                    required
                                     value={formData.notes}
                                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                    rows={16}
+                                    rows={10}
                                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-900 dark:text-gray-100 transition-all resize-none font-mono text-sm"
-                                    placeholder="Paste your meeting notes here... The AI will analyze them to extract key points and action items."
+                                    placeholder="Add any additional notes here..."
                                 />
                                 <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                    Include any discussions, decisions, and action items from your meeting
+                                    These notes will be combined with the transcription
                                 </p>
                             </div>
                         </div>
@@ -130,7 +168,7 @@ export default function NewMeetingPage() {
                                 {loading ? (
                                     <>
                                         <Loader2 className="w-5 h-5 animate-spin" />
-                                        Processing...
+                                        {selectedFile ? "Transcribing & Processing..." : "Processing..."}
                                     </>
                                 ) : (
                                     <>

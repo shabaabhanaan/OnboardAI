@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Check, Sparkles } from "lucide-react";
+import PayHereButton from "@/components/PayHereButton";
 
 export default function PricingPage() {
     const plans = [
@@ -110,8 +111,8 @@ export default function PricingPage() {
                             <div
                                 key={plan.name}
                                 className={`relative rounded-2xl p-8 border-2 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 animate-fadeIn ${plan.highlighted
-                                        ? 'border-indigo-600 dark:border-indigo-500 bg-gradient-to-br from-white to-indigo-50 dark:from-gray-800 dark:to-indigo-950 shadow-xl scale-105'
-                                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+                                    ? 'border-indigo-600 dark:border-indigo-500 bg-gradient-to-br from-white to-indigo-50 dark:from-gray-800 dark:to-indigo-950 shadow-xl scale-105'
+                                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
                                     }`}
                                 style={{ animationDelay: `${index * 0.1}s` }}
                             >
@@ -141,15 +142,26 @@ export default function PricingPage() {
                                     </div>
                                 </div>
 
-                                <Link
-                                    href={plan.href}
-                                    className={`block w-full py-3 px-6 rounded-xl font-semibold text-center transition-all duration-300 mb-6 ${plan.highlighted
+                                {plan.name === "Pro" ? (
+                                    <div className="mb-6">
+                                        <PayHereButton
+                                            amount={3600}
+                                            orderId={`PRO-${Date.now()}`}
+                                            items="MeetWise Pro Monthly"
+                                            className={`w-full py-3 px-6 rounded-xl font-semibold text-center transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 bg-gradient-to-r from-indigo-600 to-purple-600 text-white`}
+                                        />
+                                    </div>
+                                ) : (
+                                    <Link
+                                        href={plan.href}
+                                        className={`block w-full py-3 px-6 rounded-xl font-semibold text-center transition-all duration-300 mb-6 ${plan.highlighted
                                             ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg hover:shadow-xl hover:scale-105'
                                             : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
-                                        }`}
-                                >
-                                    {plan.cta}
-                                </Link>
+                                            }`}
+                                    >
+                                        {plan.cta}
+                                    </Link>
+                                )}
 
                                 <div className="space-y-3">
                                     <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
