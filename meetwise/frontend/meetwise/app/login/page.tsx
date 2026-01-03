@@ -33,15 +33,20 @@ export default function LoginPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-black dark:to-indigo-950 flex items-center justify-center px-6 py-12">
             <div className="w-full max-w-md">
-                {/* Logo */}
-                <Link href="/" className="flex items-center justify-center gap-3 mb-8">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg">
-                        <Sparkles className="w-7 h-7 text-white" />
-                    </div>
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                        MeetWise
-                    </h1>
-                </Link>
+                {/* Logo and Welcome Message */}
+                <div className="text-center mb-8">
+                    <Link href="/" className="flex items-center justify-center gap-3 mb-4">
+                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg">
+                            <Sparkles className="w-7 h-7 text-white" />
+                        </div>
+                        <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                            MeetingHunts
+                        </h1>
+                    </Link>
+                    <p className="text-gray-600 dark:text-gray-400">
+                        Welcome back
+                    </p>
+                </div>
 
                 {/* Login Card */}
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700 animate-fadeIn">

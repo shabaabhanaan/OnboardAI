@@ -38,7 +38,7 @@ export default function Home() {
               <Sparkles className="w-7 h-7 text-white" />
             </div>
             <h1 className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              MeetWise
+              MeetingHunts
             </h1>
           </div>
 
@@ -127,7 +127,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="text-center py-8 text-gray-600 dark:text-gray-400 border-t border-gray-200 dark:border-gray-800">
-        <p>© 2024 MeetWise. Powered by AI.</p>
+        <p>© 2024 MeetingHunts. Powered by AI.</p>
       </footer>
     </div>
   );

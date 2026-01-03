@@ -10,7 +10,7 @@ from app.models import models  # IMPORTANT: register models
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="MeetWise API",
+    title="MeetingHunts API",
     description="AI-powered meeting notes generator with database persistence",
     version="2.0.0"
 )

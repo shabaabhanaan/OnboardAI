@@ -147,7 +147,7 @@ export default function PricingPage() {
                                         <PayHereButton
                                             amount={3600}
                                             orderId={`PRO-${Date.now()}`}
-                                            items="MeetWise Pro Monthly"
+                                            items="MeetingHunts Pro Monthly"
                                             className={`w-full py-3 px-6 rounded-xl font-semibold text-center transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 bg-gradient-to-r from-indigo-600 to-purple-600 text-white`}
                                         />
                                     </div>
