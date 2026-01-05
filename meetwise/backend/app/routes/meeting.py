@@ -18,7 +18,7 @@ class MeetingCreate(BaseModel):
     notes: str
 
 class ActionItem(BaseModel):
-    task: str
+    description: str  # Matches AI prompt 'description'
     priority: str
     assignee: Optional[str] = None
 
@@ -116,7 +116,9 @@ def upload_meeting(
         )
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        import logging
+        logging.error(f"Error processing meeting (upload): {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
         
     finally:
         # Cleanup

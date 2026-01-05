@@ -10,7 +10,7 @@ export default function PricingPage() {
             name: "Free",
             price: "$0",
             period: "forever",
-            description: "Perfect for trying out MeetWise",
+            description: "Perfect for trying out MeetingHunts",
             features: [
                 "5 meetings per month",
                 "AI-powered summaries",
@@ -79,7 +79,7 @@ export default function PricingPage() {
                                 <Sparkles className="w-5 h-5 text-white" />
                             </div>
                             <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                                MeetWise
+                                MeetingHunts
                             </span>
                         </Link>
 
@@ -234,7 +234,7 @@ export default function PricingPage() {
 
             {/* Footer */}
             <footer className="text-center py-8 text-gray-600 dark:text-gray-400 border-t border-gray-200 dark:border-gray-800 mt-16">
-                <p>© 2024 MeetWise. All plans include AI-powered features.</p>
+                <p>© 2024 MeetingHunts. All plans include AI-powered features.</p>
             </footer>
         </div>
     );

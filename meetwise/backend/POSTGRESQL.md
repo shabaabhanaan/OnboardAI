@@ -1,32 +1,31 @@
-# PostgreSQL Setup Guide for MeetWise
+# PostgreSQL Setup Guide for MeetingHunts
 
-This guide explains how to configure MeetWise to use PostgreSQL instead of SQLite.
+This guide explains how to configure MeetingHunts to use PostgreSQL instead of SQLite.
 
-## Quick Start
+## Why PostgreSQL?
+SQLite is excellent for development and light usage, but MeetingHunts uses PostgreSQL in production for:
+1. **Concurrency**: Better handling of multiple simultaneous AI processing tasks.
+2. **Reliability**: Robust data management for user accounts and meeting histories.
+3. **Scalability**: Capable of handling millions of meeting records.
 
-### Option 1: Use SQLite (Default)
-Nothing to configure! The app uses SQLite by default.
+## Local Setup
 
-### Option 2: Use PostgreSQL
+### 1. Install PostgreSQL
+Download and install PostgreSQL for your OS.
 
-1. **Install PostgreSQL** (if not already installed)
-   - Download from: https://www.postgresql.org/download/
-   - Or use Docker: `docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=password postgres`
+### 2. Create Database
+Open `pgAdmin` or use the command line:
+```sql
+   CREATE DATABASE meetinghunts;
+```
 
-2. **Create Database**
-   ```sql
-   CREATE DATABASE meetwise;
-   ```
+### 3. Configure Environment
+Update your `.env` file in `meetinghunts/backend/`:
+```env
+   DATABASE_URL=postgresql://postgres:password@localhost:5432/meetinghunts
+```
 
-3. **Update .env file**
-   ```
-   DATABASE_URL=postgresql://postgres:password@localhost:5432/meetwise
-   ```
-
-4. **Restart the server**
-   Tables will be created automatically!
-
-## Connection String Format
+## Connection Strings
 
 ```
 postgresql://username:password@host:port/database_name
@@ -36,22 +35,22 @@ postgresql://username:password@host:port/database_name
 
 **Local PostgreSQL:**
 ```
-DATABASE_URL=postgresql://postgres:mypassword@localhost:5432/meetwise
+DATABASE_URL=postgresql://postgres:mypassword@localhost:5432/meetinghunts
 ```
 
 **Docker PostgreSQL:**
 ```
-DATABASE_URL=postgresql://postgres:password@db:5432/meetwise
+DATABASE_URL=postgresql://postgres:password@db:5432/meetinghunts
 ```
 
 **Cloud PostgreSQL (Heroku, AWS RDS, etc):**
 ```
-DATABASE_URL=postgresql://user:pass@host.region.rds.amazonaws.com:5432/meetwise
+DATABASE_URL=postgresql://user:pass@host.region.rds.amazonaws.com:5432/meetinghunts
 ```
 
 **With SSL (required for some cloud providers):**
 ```
-DATABASE_URL=postgresql://user:pass@host:5432/meetwise?sslmode=require
+DATABASE_URL=postgresql://user:pass@host:5432/meetinghunts?sslmode=require
 ```
 
 ## Docker Compose Example
@@ -62,10 +61,14 @@ Create `docker-compose.yml`:
 version: '3.8'
 
 services:
+  backend:
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/meetinghunts
+  
   db:
     image: postgres:15
     environment:
-      POSTGRES_DB: meetwise
+      POSTGRES_DB: meetinghunts
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
     ports:
@@ -77,26 +80,17 @@ volumes:
   postgres_data:
 ```
 
-Then update `.env`:
-```
-DATABASE_URL=postgresql://postgres:password@localhost:5432/meetwise
-```
+## Migration Instructions
 
-## Features with PostgreSQL
+If you have data in SQLite and want to move to PostgreSQL:
+1. Run the backend once with PostgreSQL to create the tables.
+2. Use an ETL tool or manual SQL exports to move data.
 
-✅ **Better Performance**: Handles more concurrent users  
-✅ **Production Ready**: Suitable for deployment  
-✅ **Connection Pooling**: Configurable pool size (default: 10)  
-✅ **Auto Reconnection**: Pool pre-ping validates connections  
-✅ **ACID Compliance**: Full transaction support  
+## Environment Variable Reference
 
-## Configuration Options
-
-The database module supports these environment variables:
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `DATABASE_URL` | `sqlite:///./meetwise.db` | Full database connection string |
+| Variable | Default (SQLite) | Production (PostgreSQL) |
+| --- | --- | --- |
+| `DATABASE_URL` | `sqlite:///./meetinghunts.db` | Full database connection string |
 
 ## Connection Pool Settings
 
@@ -108,15 +102,8 @@ max_overflow=20       # Additional connections when needed
 pool_pre_ping=True    # Verify connections before use
 ```
 
-## Verify Connection
-
-Check the `/health` endpoint to see which database is being used:
-
-```bash
-curl http://localhost:8000/health
-```
-
-Response:
+## Verification
+You can verify the connection by hitting the `/api/health` or `/` endpoint:
 ```json
 {
   "status": "ok",

@@ -1,5 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+import os
+
+# Load environment variables from .env file
+load_dotenv()
 
 from app.routes import auth, meeting, user
 from app.core import database
@@ -42,3 +47,5 @@ def health_check():
         "database": db_info["type"],
         "detail": db_info
     }
+
+

@@ -2,7 +2,8 @@
 import Bytez from "bytez.js";
 import fs from 'fs';
 
-const key = "4fbe90a3c567502654a7a15933c24420";
+const key = process.env.OPENAI_API_KEY || "4fbe90a3c567502654a7a15933c24420";
+// Re-using OPENAI_API_KEY as the user is using it for the Bytez key in their .env
 const sdk = new Bytez(key);
 
 // Read arguments: 0=node, 1=script, 2=command, 3=payload

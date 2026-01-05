@@ -1,10 +1,10 @@
-# MeetWise Database Setup
+# MeetingHunts Database Setup
 
 ## Overview
-MeetWise now uses **SQLite** with **SQLAlchemy ORM** for persistent data storage. All user data and meetings are saved to a database file.
+MeetingHunts now uses **SQLite** with **SQLAlchemy ORM** for persistent data storage. All user data and meetings are saved to a database file.
 
 ## Database File
-- **Location**: `meetwise/backend/meetwise.db`
+- **Location**: `meetwise/backend/meetinghunts.db`
 - **Type**: SQLite (single file database)
 - **Auto-created**: Yes, on first server startup
 
@@ -87,19 +87,19 @@ db.query(Meeting).filter(Meeting.user_id == user_id).all()
 ### Backup Database
 ```bash
 # Copy the database file
-cp meetwise/backend/meetwise.db meetwise/backend/meetwise_backup.db
+cp meetwise/backend/meetinghunts.db meetwise/backend/meetinghunts_backup.db
 ```
 
 ### Reset Database
 ```bash
 # Delete database file (will be recreated on next startup)
-rm meetwise/backend/meetwise.db
+rm meetwise/backend/meetinghunts.db
 ```
 
 ### View Database
 ```bash
 # Use SQLite CLI
-sqlite3 meetwise/backend/meetwise.db
+sqlite3 meetwise/backend/meetinghunts.db
 
 # Show tables
 .tables
@@ -127,5 +127,5 @@ No additional environment variables needed for SQLite. The database is created a
 
 For PostgreSQL (future):
 ```env
-DATABASE_URL=postgresql://user:password@localhost/meetwise
+DATABASE_URL=postgresql://user:password@localhost/meetinghunts
 ```

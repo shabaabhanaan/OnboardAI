@@ -3,7 +3,7 @@
 ## Current Status
 ✅ **PostgreSQL Support Added!**
 
-Your MeetWise application now supports both SQLite and PostgreSQL databases.
+Your MeetingHunts application now supports both SQLite and PostgreSQL databases.
 
 ## What Changed
 
@@ -36,7 +36,7 @@ Your MeetWise application now supports both SQLite and PostgreSQL databases.
 
 2. Create database:
    ```sql
-   CREATE DATABASE meetwise;
+   CREATE DATABASE meetinghunts;
    ```
 
 3. Update `.env`:

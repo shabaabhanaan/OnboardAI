@@ -1,4 +1,4 @@
-MeetWise – AI Smart Meeting Notes Generator
+MeetingHunts – AI Smart Meeting Notes Generator
 Frontend: Next.js
 Backend: FastAPI
 AI: Speech-to-text + NLP

@@ -9,7 +9,7 @@ load_dotenv()
 # Database URL configuration
 # Supports both PostgreSQL and SQLite
 # Set DATABASE_URL in .env for PostgreSQL, otherwise defaults to SQLite
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./meetwise.db")
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./meetinghunts.db")
 
 # Determine if using SQLite for special configuration
 is_sqlite = DATABASE_URL.startswith("sqlite")

@@ -94,10 +94,12 @@ def process_meeting_notes(title: str, notes: str) -> Dict[str, Any]:
         return json.loads(content)
 
     except Exception as e:
-        print(f"Error processing meeting notes: {str(e)}")
-        # Fallback
+        import logging
+        logging.error(f"Error processing meeting notes: {str(e)}")
+        # Fallback with all required fields for MeetingResponse
         return {
             "summary": "Failed to generate summary.",
+            "key_points": [],
             "action_items": []
         }
 

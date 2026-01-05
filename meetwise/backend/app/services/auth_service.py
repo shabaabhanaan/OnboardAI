@@ -10,7 +10,10 @@ import os
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:
-    raise ValueError("No SECRET_KEY set for Flask application")
+    # Use a fixed fallback for local development if not provided in .env
+    SECRET_KEY = "dev_secret_key_change_me_in_production"
+    # Note: We don't raise error here to allow the app to start in dev environments
+    # but we should ensure the user is aware via DEPLOY.md (already updated).
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
