@@ -17,7 +17,18 @@ export default function PayHereButton({ amount, orderId, items, className }: Pay
     const [loading, setLoading] = useState(false);
     const { user } = useAuth();
 
-    const handlePayment = async () => {
+    const handlePayment = async (e: React.MouseEvent) => {
+        // Mock Mode: Hold Shift to simulate success
+        if (e.shiftKey) {
+            setLoading(true);
+            setTimeout(() => {
+                alert("Simulating successful payment logic...");
+                window.location.href = '/dashboard?payment=success';
+                setLoading(false);
+            }, 1500);
+            return;
+        }
+
         setLoading(true);
         try {
             const session = await getSession();
@@ -91,9 +102,16 @@ export default function PayHereButton({ amount, orderId, items, className }: Pay
             document.body.appendChild(form);
             form.submit();
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("Payment Error:", error);
-            alert("Failed to start payment processing.");
+
+            // Helpful message for the user
+            if (error.message.includes("fetch")) {
+                alert("Cannot connect to payment server. Did you deploy the Supabase Edge Functions?");
+            } else {
+                alert(`Payment Error: ${error.message}`);
+            }
+
             setLoading(false);
         }
     };
