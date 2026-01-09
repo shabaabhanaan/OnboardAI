@@ -27,6 +27,13 @@ export const auth = {
 
         if (profileError) console.error('Error creating profile:', profileError);
 
+        // Send welcome email (non-blocking)
+        fetch('/api/welcome', {
+            method: 'POST',
+            body: JSON.stringify({ email, username }),
+            headers: { 'Content-Type': 'application/json' }
+        }).catch(err => console.error('Failed to trigger welcome email:', err));
+
         return data;
     },
 
