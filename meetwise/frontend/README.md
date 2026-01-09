@@ -34,3 +34,11 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Deploy on Netlify
+
+1. Push your code to a Git repository (GitHub, GitLab, etc).
+2. Connect the repository to Netlify.
+3. Netlify should automatically detect the `netlify.toml` configuration.
+4. **Important**: Add your environment variables (SUPABASE_URL, etc.) in the Netlify Dashboard under **Site settings > Environment variables**.
+
