@@ -1,4 +1,4 @@
-MeetingHunts – AI Smart Meeting Notes Generator
+Summriate – AI Smart Meeting Notes Generator
 Frontend: Next.js
-Backend: FastAPI
+Backend: Supabase
 AI: Speech-to-text + NLP
