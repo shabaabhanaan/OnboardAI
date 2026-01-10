@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Sparkles, Send, Loader2 } from "lucide-react";
+import { ArrowLeft, Sparkles, Send, Loader2, Github } from "lucide-react";
 import { summaries } from "@/lib/api";
 import { useAuth } from "@/components/auth-provider";
 import UpgradePrompt from "@/components/UpgradePrompt";
@@ -19,9 +19,25 @@ export default function NewMeetingPage() {
     const [showUpgrade, setShowUpgrade] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [videoUrl, setVideoUrl] = useState("");
-    const [inputType, setInputType] = useState<"file" | "url">("file");
+    const [inputType, setInputType] = useState<"text" | "github">("text");
+    const [githubUrl, setGithubUrl] = useState("");
+
+    // Helper to fetch GitHub content (Server-Side Proxy)
+    const fetchGithubRepo = async (url: string) => {
+        const response = await fetch("/api/github", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Failed to fetch GitHub repo");
+        }
+
+        return data; // returns { title, context }
+    };
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -36,16 +52,23 @@ export default function NewMeetingPage() {
 
         try {
             let summary;
-            if (inputType === "url" && videoUrl) {
-                // Use URL process endpoint
-                summary = await summaries.processLink(videoUrl, formData.title, formData.notes);
-            } else if (inputType === "file" && selectedFile) {
-                // Use upload endpoint
-                summary = await summaries.upload(selectedFile, formData.title, formData.notes);
+
+            if (inputType === 'github') {
+                if (!githubUrl) throw new Error("Please enter a GitHub URL");
+
+                // Fetch data first
+                const { title, context } = await fetchGithubRepo(githubUrl);
+
+                // Use the fetched data to create the onboarding
+                // We use the manual title if user entered one, otherwise repo name
+                const finalTitle = formData.title || title;
+                summary = await summaries.create(finalTitle, context);
+
             } else {
-                // Use existing create endpoint (text only)
+                // Standard text input
                 summary = await summaries.create(formData.title, formData.notes);
             }
+
             router.push(`/dashboard/${summary.id}`);
         } catch (err: any) {
             if (err.message?.includes("PLAN_LIMIT_REACHED")) {
@@ -84,7 +107,7 @@ export default function NewMeetingPage() {
                                 <Sparkles className="w-6 h-6 text-white" />
                             </div>
                             <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                                Summriate
+                                OnboardAI
                             </h1>
                         </div>
                     </div>
@@ -96,10 +119,10 @@ export default function NewMeetingPage() {
                 <div className="max-w-4xl mx-auto">
                     <div className="mb-8 animate-fadeIn">
                         <h1 className="text-4xl font-bold text-gray-800 dark:text-gray-100 mb-2">
-                            Upload New Video
+                            New Project Onboarding
                         </h1>
                         <p className="text-gray-600 dark:text-gray-400">
-                            Upload a video/audio file to get AI-powered transcription and summary
+                            Paste codebase context or docs, and get a tailored learning plan.
                         </p>
                     </div>
 
@@ -110,106 +133,100 @@ export default function NewMeetingPage() {
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-6 animate-fadeIn">
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-200 dark:border-gray-700 shadow-lg">
-                            {/* Title Field */}
-                            <div className="mb-6">
-                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                                    Title
-                                </label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={formData.title}
-                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-900 dark:text-gray-100 transition-all text-lg"
-                                    placeholder="e.g., Team Meeting Jan 2026"
-                                />
-                            </div>
+                        {/* Input Type Toggle */}
+                        <div className="flex gap-4 mb-6">
+                            <button
+                                type="button"
+                                onClick={() => setInputType("text")}
+                                className={`flex-1 py-3 px-4 rounded-xl border-2 font-medium transition-all flex items-center justify-center gap-2 ${inputType === "text"
+                                    ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400"
+                                    : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                                    }`}
+                            >
+                                <Sparkles className="w-4 h-4" />
+                                Manual Input
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setInputType("github")}
+                                className={`flex-1 py-3 px-4 rounded-xl border-2 font-medium transition-all flex items-center justify-center gap-2 ${inputType === "github"
+                                    ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400"
+                                    : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                                    }`}
+                            >
+                                <Github className="w-4 h-4" />
+                                GitHub Repo
+                            </button>
+                        </div>
 
-                            <div className="mb-6">
-                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                                    Source
-                                </label>
-                                <div className="flex gap-4 mb-4">
-                                    <button
-                                        type="button"
-                                        onClick={() => setInputType("file")}
-                                        className={`flex-1 py-2 px-4 rounded-lg border-2 font-medium transition-all ${inputType === "file"
-                                            ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400"
-                                            : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-                                            }`}
-                                    >
-                                        Upload File
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setInputType("url")}
-                                        className={`flex-1 py-2 px-4 rounded-lg border-2 font-medium transition-all ${inputType === "url"
-                                            ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400"
-                                            : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-                                            }`}
-                                    >
-                                        Video Link
-                                    </button>
-                                </div>
-
-                                {inputType === "file" ? (
-                                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center hover:border-indigo-500 transition-colors">
-                                        <input
-                                            type="file"
-                                            accept="audio/*,video/*"
-                                            onChange={(e) => setSelectedFile(e.target.files ? e.target.files[0] : null)}
-                                            className="hidden"
-                                            id="file-upload"
-                                        />
-                                        <label
-                                            htmlFor="file-upload"
-                                            className="cursor-pointer flex flex-col items-center gap-2"
-                                        >
-                                            <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-                                                <Sparkles className="w-6 h-6" />
-                                            </div>
-                                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                {selectedFile ? selectedFile.name : "Click to select a video or audio file"}
-                                            </span>
-                                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                Supports MP3, WAV, MP4, MOV (Max 25MB)
-                                            </span>
-                                        </label>
-                                    </div>
-                                ) : (
-                                    <div>
+                        {inputType === 'github' ? (
+                            <div className="animate-fadeIn">
+                                <div className="mb-6">
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                                        GitHub Repository URL
+                                    </label>
+                                    <div className="relative">
+                                        <Github className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                                         <input
                                             type="url"
-                                            value={videoUrl}
-                                            onChange={(e) => setVideoUrl(e.target.value)}
-                                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-900 dark:text-gray-100 transition-all"
-                                            placeholder="Paste public video URL (e.g. https://example.com/video.mp4)"
+                                            required={inputType === 'github'}
+                                            value={githubUrl}
+                                            onChange={(e) => setGithubUrl(e.target.value)}
+                                            className="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-900 dark:text-gray-100 transition-all font-mono text-sm"
+                                            placeholder="https://github.com/owner/repo"
                                         />
-                                        <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                            Enter a direct link to a video or audio file.
-                                        </p>
                                     </div>
-                                )}
-                            </div>
+                                </div>
 
-                            {/* Notes Field */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                                    Additional Notes (Optional)
-                                </label>
-                                <textarea
-                                    value={formData.notes}
-                                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                    rows={10}
-                                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-900 dark:text-gray-100 transition-all resize-none font-mono text-sm"
-                                    placeholder="Add any additional notes here..."
-                                />
-                                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                    These notes will be combined with the transcription
-                                </p>
+                                <div className="mb-6">
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                                        Project Name (Optional)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.title}
+                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-900 dark:text-gray-100 transition-all text-lg"
+                                        placeholder="Leave blank to use Repo Name"
+                                    />
+                                </div>
                             </div>
-                        </div>
+                        ) : (
+                            <div className="animate-fadeIn">
+                                {/* Title Field */}
+                                <div className="mb-6">
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                                        Project Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        required={inputType === 'text'}
+                                        value={formData.title}
+                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-900 dark:text-gray-100 transition-all text-lg"
+                                        placeholder="e.g., E-Commerce Monorepo, Legacy PHP System..."
+                                    />
+                                </div>
+
+                                {/* Notes Field */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                                        Codebase Context / Documentation
+                                    </label>
+                                    <textarea
+                                        value={formData.notes}
+                                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                        rows={10}
+                                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-900 dark:text-gray-100 transition-all resize-none font-mono text-sm"
+                                        placeholder="Paste README content, directory structure, or key architectural diagrams here..."
+                                    />
+                                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                        The more docs you provide, the better the learning plan.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
 
                         {/* Submit Button */}
                         <div className="flex justify-end gap-4">
@@ -227,23 +244,24 @@ export default function NewMeetingPage() {
                                 {loading ? (
                                     <>
                                         <Loader2 className="w-5 h-5 animate-spin" />
-                                        {inputType === "url" ? "Processing URL..." : selectedFile ? "Transcribing & Processing..." : "Processing..."}
+                                        {inputType === 'github' ? "Fetching Repo..." : "Generating Plan..."}
                                     </>
                                 ) : (
                                     <>
-                                        <Send className="w-5 h-5" />
-                                        Process with AI
+                                        <Sparkles className="w-5 h-5" />
+                                        Generate Plan
                                     </>
                                 )}
                             </button>
                         </div>
                     </form>
                 </div>
-            </main>
+            </main >
 
             {showUpgrade && (
                 <UpgradePrompt onClose={() => setShowUpgrade(false)} />
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }

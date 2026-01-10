@@ -64,7 +64,7 @@ export default function DashboardPage() {
                                 <Sparkles className="w-6 h-6 text-white" />
                             </div>
                             <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                                Summriate
+                                OnboardAI
                             </h1>
                         </Link>
 
@@ -86,10 +86,10 @@ export default function DashboardPage() {
                     <div className="flex items-center justify-between mb-8 animate-fadeIn">
                         <div>
                             <h1 className="text-4xl font-bold text-gray-800 dark:text-gray-100 mb-2">
-                                My Summaries
+                                Your Onboardings
                             </h1>
                             <p className="text-gray-600 dark:text-gray-400">
-                                Manage and review your video summaries
+                                Review your learning plans and architecture guides
                             </p>
                         </div>
 
@@ -108,7 +108,7 @@ export default function DashboardPage() {
                                 className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                             >
                                 <Plus className="w-5 h-5" />
-                                New Summary
+                                New Onboarding
                             </Link>
                         </div>
                     </div>
@@ -132,17 +132,17 @@ export default function DashboardPage() {
                                 <FileText className="w-10 h-10 text-white" />
                             </div>
                             <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-2">
-                                No summaries yet
+                                No onboardings yet
                             </h2>
                             <p className="text-gray-600 dark:text-gray-400 mb-8">
-                                Upload your first video to get AI-powered summaries
+                                Start your first project onboarding to get an AI Architect plan
                             </p>
                             <Link
                                 href="/dashboard/new"
                                 className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                             >
                                 <Plus className="w-5 h-5" />
-                                Upload First Video
+                                Start First Onboarding
                             </Link>
                         </div>
                     ) : (
@@ -174,7 +174,7 @@ export default function DashboardPage() {
                                     </p>
 
                                     <div className="flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 font-medium">
-                                        {summary.action_items?.length || 0} action items
+                                        {summary.action_items?.length || 0} Learning Tasks
                                     </div>
                                 </Link>
                             ))}

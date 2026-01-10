@@ -7,23 +7,23 @@ export default function Home() {
   const features = [
     {
       icon: Brain,
-      title: "AI-Powered Summaries",
-      description: "Get instant, intelligent summaries of your meetings using advanced AI"
+      title: "Architecture Analysis",
+      description: "Understand the high-level design and data flow instantly"
     },
     {
       icon: Zap,
-      title: "Action Items Extraction",
-      description: "Automatically extract and prioritize action items from notes"
+      title: "Critical Path Detection",
+      description: "Identify the most important files and modules to read first"
     },
     {
       icon: Shield,
-      title: "Secure & Private",
-      description: "Your meeting notes are encrypted and stored securely"
+      title: "So You Can Build Faster",
+      description: "Stop wasting weeks reading docs. Start contributing in days."
     },
     {
       icon: Sparkles,
-      title: "Smart Organization",
-      description: "Keep all your meetings organized and easily searchable"
+      title: "Personalized Plans",
+      description: "Get a day-by-day learning plan tailored to your role"
     }
   ];
 
@@ -38,18 +38,18 @@ export default function Home() {
               <Sparkles className="w-7 h-7 text-white" />
             </div>
             <h1 className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              Summriate
+              OnboardAI
             </h1>
           </div>
 
           {/* Tagline */}
           <p className="text-2xl md:text-3xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
-            Transform Your Meeting Notes with AI
+            Master Any Codebase in Minutes
           </p>
 
           <p className="text-lg text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto">
-            Never miss important details again. Let AI automatically summarize your meetings,
-            extract action items, and keep everything organized in one place.
+            Stop getting lost in new projects. Paste a GitHub link, and get an instant architecture overview,
+            critical file map, and personalized learning plan.
           </p>
 
           {/* CTA Buttons */}
@@ -104,9 +104,9 @@ export default function Home() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
-                { step: "01", title: "Write Your Notes", desc: "Paste or type your meeting notes" },
-                { step: "02", title: "AI Processes", desc: "Our AI analyzes and extracts key information" },
-                { step: "03", title: "Get Insights", desc: "Receive summaries and action items instantly" }
+                { step: "01", title: "Paste Repo URL", desc: "Simply paste the GitHub link of the project" },
+                { step: "02", title: "AI Maps Architecture", desc: "We analyze structure, dependencies, and docs" },
+                { step: "03", title: "Start Contributing", desc: "Follow your personalized plan to master the code" }
               ].map((item, idx) => (
                 <div key={idx} className="text-center">
                   <div className="text-5xl font-bold text-indigo-600 dark:text-indigo-400 mb-4 opacity-50">
@@ -127,7 +127,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="text-center py-8 text-gray-600 dark:text-gray-400 border-t border-gray-200 dark:border-gray-800">
-        <p>© 2024 Summriate. Powered by AI.</p>
+        <p>© 2024 OnboardAI. Powered by AI.</p>
       </footer>
     </div>
   );

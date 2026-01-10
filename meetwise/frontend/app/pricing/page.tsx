@@ -24,17 +24,17 @@ export default function PricingPage() {
             name: "Free",
             price: "$0",
             period: "forever",
-            description: "Perfect for trying out MeetingHunts",
+            description: "Perfect for trying out OnboardAI",
             features: [
-                "1 summary per account",
-                "AI-powered transcription",
-                "Key points extraction",
-                "Action item identification",
-                "Basic summary view"
+                "1 public repo onboarding",
+                "Basic Architecture Overview",
+                "Critical File Analysis",
+                "Day 1 Learning Plan",
+                "Community Support"
             ],
             limitations: [
-                "Limit: 1 summary only",
-                "No export options"
+                "Limit: 1 active project",
+                "Public repos only"
             ],
             cta: "Get Started Free",
             href: "/register",
@@ -43,17 +43,15 @@ export default function PricingPage() {
         {
             id: "pro",
             name: "Pro",
-            price: "$12",
+            price: "$19",
             period: "per month",
-            description: "For professionals who need more",
+            description: "For freelance developers and consultants",
             features: [
-                "Unlimited summaries",
-                "AI-powered transcription",
-                "Priority action items",
-                "Advanced analytics",
-                "Unlimited history",
-                "Export to PDF/Markdown",
-                "Custom tags & categories",
+                "Unlimited public & private repos",
+                "Deep Dependency Analysis",
+                "Custom Learning Paths",
+                "Export to Markdown/PDF",
+                "VS Code Extension context",
                 "Priority email support"
             ],
             limitations: [],
@@ -66,15 +64,15 @@ export default function PricingPage() {
             name: "Team",
             price: "$39",
             period: "per month",
-            description: "For teams and organizations",
+            description: "For engineering teams and agencies",
             features: [
                 "Everything in Pro",
-                "Unlimited team members",
-                "Shared summary workspace",
-                "Team analytics dashboard",
-                "Role-based permissions",
-                "Admin controls",
-                "Dedicated account manager+24/7 support"
+                "Team Workspace & Sharing",
+                "Custom Architecture Prompting",
+                "SSO / SAML Integration",
+                "Admin Usage Analytics",
+                "Dedicated Success Manager",
+                "Priority 24/7 Support"
             ],
             limitations: [],
             cta: "Contact Sales",
@@ -94,7 +92,7 @@ export default function PricingPage() {
                                 <Sparkles className="w-5 h-5 text-white" />
                             </div>
                             <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                                Summriate
+                                OnboardAI
                             </span>
                         </Link>
 
@@ -176,7 +174,7 @@ export default function PricingPage() {
                                         <PayHereButton
                                             amount={3600}
                                             orderId={`PRO-${Date.now()}`}
-                                            items="MeetingHunts Pro Monthly"
+                                            items="OnboardAI Pro Monthly"
                                             className={`w-full py-3 px-6 rounded-xl font-semibold text-center transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 bg-gradient-to-r from-indigo-600 to-purple-600 text-white`}
                                         />
                                     </div>
@@ -263,7 +261,7 @@ export default function PricingPage() {
 
             {/* Footer */}
             <footer className="text-center py-8 text-gray-600 dark:text-gray-400 border-t border-gray-200 dark:border-gray-800 mt-16">
-                <p>© 2024 Summriate. All plans include AI-powered features.</p>
+                <p>© 2024 OnboardAI. All plans include AI-powered architecture analysis.</p>
             </footer>
         </div>
     );

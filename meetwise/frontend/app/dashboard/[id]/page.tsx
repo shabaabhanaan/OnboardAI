@@ -112,7 +112,7 @@ export default function MeetingDetailPage() {
                                     <Sparkles className="w-6 h-6 text-white" />
                                 </div>
                                 <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                                    Summriate
+                                    OnboardAI
                                 </h1>
                             </div>
                         </div>
@@ -150,7 +150,7 @@ export default function MeetingDetailPage() {
                                 <FileText className="w-5 h-5 text-white" />
                             </div>
                             <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-                                AI Summary
+                                Architecture Overview
                             </h2>
                         </div>
 
@@ -164,7 +164,7 @@ export default function MeetingDetailPage() {
                         {summary.key_points && summary.key_points.length > 0 && (
                             <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                                 <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">
-                                    Key Points
+                                    Critical Files & Modules
                                 </h3>
                                 <ul className="space-y-3">
                                     {summary.key_points.map((point, index) => (
@@ -182,7 +182,7 @@ export default function MeetingDetailPage() {
                     {summary.action_items && summary.action_items.length > 0 && (
                         <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-200 dark:border-gray-700 shadow-lg animate-fadeIn" style={{ animationDelay: "0.1s" }}>
                             <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">
-                                Action Items ({summary.action_items.length})
+                                Learning Plan ({summary.action_items.length} Tasks)
                             </h2>
 
                             <div className="space-y-4">
@@ -218,7 +218,7 @@ export default function MeetingDetailPage() {
                             onClick={() => setShowOriginalNotes(!showOriginalNotes)}
                             className="text-lg font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
                         >
-                            {showOriginalNotes ? "Hide" : "Show"} Original Notes
+                            {showOriginalNotes ? "Hide" : "Show"} Project Context / Docs
                         </button>
 
                         {showOriginalNotes && (

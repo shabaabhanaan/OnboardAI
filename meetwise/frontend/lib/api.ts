@@ -1,10 +1,8 @@
 import { supabase } from './supabase';
-import Bytez from 'bytez.js';
 
-const BYTEZ_KEY = process.env.NEXT_PUBLIC_BYTEZ_KEY || '4fbe90a3c567502654a7a15933c24420';
-const sdk = new Bytez(BYTEZ_KEY);
+// Bytez SDK removed per user request.
+// Transcription features (upload/video link) are disabled.
 
-// Auth API
 export const auth = {
     register: async (username: string, email: string, password: string, plan: string = 'free') => {
         const { data, error } = await supabase.auth.signUp({
@@ -160,21 +158,11 @@ export const summaries = {
     },
 
     upload: async (file: File, title: string, notes?: string) => {
-        // 1. Transcribe (Bytez)
-        const transcription = await transcribeAudio(file);
-        const fullNotes = notes ? `${notes}\n\nRunning Transcription:\n${transcription}` : transcription;
-
-        // 2. Create summary using the transcribed notes
-        return summaries.create(title, fullNotes);
+        throw new Error("Video/Audio upload is currently disabled because the transcription service (Bytez) has been removed. Please enter your notes manually.");
     },
 
     processLink: async (url: string, title: string, notes?: string) => {
-        // 1. Transcribe URL (Bytez)
-        const transcription = await transcribeUrl(url);
-        const fullNotes = notes ? `${notes}\n\nRunning Transcription from URL:\n${transcription}` : transcription;
-
-        // 2. Create summary using the transcribed notes
-        return summaries.create(title, fullNotes);
+        throw new Error("Video link processing is currently disabled because the transcription service (Bytez) has been removed. Please enter your notes manually.");
     },
 
     list: async () => {
@@ -225,27 +213,32 @@ export const summaries = {
 
 // Internal AI helpers
 async function processWithAI(title: string, notes: string) {
-    const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+    const OPENROUTER_API_KEY = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
 
     if (!OPENROUTER_API_KEY) {
-        throw new Error("OpenRouter API Key is missing. Please add it to .env.local");
+        throw new Error("OpenRouter API Key is missing. Please add NEXT_PUBLIC_OPENROUTER_API_KEY to .env.local");
     }
 
-    const system_prompt = `You are an expert meeting assistant. Analyze the provided meeting notes and extract:
-    1. A concise summary (2-3 paragraphs)
-    2. A list of key points
-    3. A list of action items with assignees (if mentioned) and priority (High/Medium/Low)
+    const system_prompt = `You are an expert AI Onboarding Engineer and Codebase Architect. 
+    Your goal is to help new developers understand a codebase quickly.
+    Analyze the provided Project Context ("Meeting Title") and Code/Docs ("Notes").
+    
+    Provide the following structured onboarding guide:
+    1. **Architecture Overview**: Explain the high-level design, main components, and data flow (mapped to 'summary').
+    2. **Critical Files & Modules**: Highlight the most important files/directories a new dev should read first (mapped to 'key_points').
+    3. **Learning Plan**: A step-by-step specific guide (Day 1, Day 2, etc.) with exercises to master the project (mapped to 'action_items').
     
     Return ONLY valid JSON in the following format:
     {
-        "summary": "...",
-        "key_points": ["...", "..."],
+        "summary": "This project uses a Microservices architecture with...",
+        "key_points": ["src/api/auth.ts - Handles JWT logic...", "config/db.js - Database connection pool...", "frontend/App.tsx - Main entry point..."],
         "action_items": [
-            {"task": "...", "assignee": "...", "priority": "..."}
+            {"task": "Day 1: Read auth flow and run local build", "assignee": "New Hire", "priority": "High"},
+            {"task": "Day 2: Implement a dummy API endpoint", "assignee": "New Hire", "priority": "Medium"}
         ]
     }`;
 
-    const user_prompt = `Meeting Title: ${title}\n\nNotes:\n${notes}`;
+    const user_prompt = `Project Name: ${title}\n\nCodebase Context/Documentation:\n${notes}`;
 
     try {
         const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -258,6 +251,7 @@ async function processWithAI(title: string, notes: string) {
             },
             body: JSON.stringify({
                 "model": "openai/gpt-4o", // You can change this to any OpenRouter model
+                "max_tokens": 1000,
                 "messages": [
                     { "role": "system", "content": system_prompt },
                     { "role": "user", "content": user_prompt }
@@ -297,35 +291,5 @@ const fileToDataURL = (file: File): Promise<string> => {
     });
 };
 
-async function transcribeAudio(file: File) {
-    const model = sdk.model("openai/whisper-large-v3");
-
-    // Convert File to Data URL for Bytez (Browser-compatible)
-    const dataURL = await fileToDataURL(file);
-    const { error, output } = await model.run(dataURL);
-
-    if (error) {
-        console.error("Bytez Transcription Error:", error);
-        throw new Error(`Transcription error: ${error}`);
-    }
-
-    if (!output) throw new Error("Transcription output is empty");
-
-    return typeof output === 'string' ? output : output.text;
-}
-
-async function transcribeUrl(url: string) {
-    const model = sdk.model("openai/whisper-large-v3");
-
-    // Pass URL directly to Bytez
-    const { error, output } = await model.run(url);
-
-    if (error) {
-        console.error("Bytez URL Transcription Error:", error);
-        throw new Error(`Transcription error: ${error}`);
-    }
-
-    if (!output) throw new Error("Transcription output is empty");
-
-    return typeof output === 'string' ? output : output.text;
-}
+// Transcription functions removed as Bytez is deprecated.
+// To restore transcription, integrate OpenAI Whisper or another provider here.
