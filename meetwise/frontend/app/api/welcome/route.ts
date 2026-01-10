@@ -11,41 +11,41 @@ export async function POST(req: NextRequest) {
 
         // Configure SMTP transport
         const transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 465,
-            secure: true, // true for 465, false for other ports
+            host: process.env.SMTP_HOST || "smtp.gmail.com",
+            port: parseInt(process.env.SMTP_PORT || "465"),
+            secure: true,
             auth: {
-                user: "shababhanaan22@gmail.com",
-                pass: "cczt xdiq nwog jmqx", // App Password
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS,
             },
         });
 
         // Set up email data
         const mailOptions = {
-            from: '"Summriate AI" <shababhanaan22@gmail.com>',
+            from: '"CodeOnboard" <' + process.env.SMTP_USER + '>',
             to: email,
-            subject: `Welcome to Summriate, ${username}! 🚀`,
+            subject: `Welcome to OnboardAI, ${username}! 🚀`,
             html: `
                 <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-                    <h2 style="color: #4f46e5; text-align: center;">Welcome to Summriate!</h2>
+                    <h2 style="color: #4f46e5; text-align: center;">Welcome to OnboardAI!</h2>
                     <p>Hi <strong>${username}</strong>,</p>
-                    <p>Thanks for joining Summriate AI! We're excited to help you transform your meetings into smart, actionable notes.</p>
-                    <p>With Summriate, you can:</p>
+                    <p>Thanks for joining! You're now ready to master any codebase in minutes.</p>
+                    <p>With OnboardAI, you can:</p>
                     <ul>
-                        <li>Generate intelligent summaries of your meetings.</li>
-                        <li>Automatically extract action items and key points.</li>
-                        <li>Keep all your meeting intelligence in one secure place.</li>
+                        <li><strong>Map Architecture:</strong> Get instant high-level overviews of complex repos.</li>
+                        <li><strong>Find Critical Files:</strong> Know exactly where to start reading.</li>
+                        <li><strong>Get Learning Plans:</strong> Follow a personalized day-by-day guide.</li>
                     </ul>
-                    <p style="margin-top: 30px;">Ready to get started? Head over to your dashboard and create your first summary!</p>
+                    <p style="margin-top: 30px;">Ready to onboard specifically? Paste your first GitHub repo URL to get started.</p>
                     <div style="text-align: center; margin: 30px 0;">
                         <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/dashboard" 
-                           style="background: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; rounded: 5px; font-weight: bold;">
-                           Go to Dashboard
+                           style="background: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                           Start Onboarding
                         </a>
                     </div>
                     <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
                     <p style="font-size: 12px; color: #666; text-align: center;">
-                        © 2026 Summriate AI. Powered by Advanced Intelligence.
+                        © 2026 OnboardAI. Master any codebase.
                     </p>
                 </div>
             `,

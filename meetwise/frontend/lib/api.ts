@@ -1,8 +1,5 @@
 import { supabase } from './supabase';
 
-// Bytez SDK removed per user request.
-// Transcription features (upload/video link) are disabled.
-
 export const auth = {
     register: async (username: string, email: string, password: string, plan: string = 'free') => {
         const { data, error } = await supabase.auth.signUp({
@@ -25,7 +22,7 @@ export const auth = {
 
         if (profileError) console.error('Error creating profile:', profileError);
 
-        // Send welcome email (non-blocking)
+        // Send welcome email 
         fetch('/api/welcome', {
             method: 'POST',
             body: JSON.stringify({ email, username }),
