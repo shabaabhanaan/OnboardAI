@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 import Bytez from 'bytez.js';
 
-const BYTEZ_KEY = process.env.NEXT_PUBLIC_BYTEZ_KEY || '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';
+const BYTEZ_KEY = process.env.NEXT_PUBLIC_BYTEZ_KEY || '4fbe90a3c567502654a7a15933c24420';
 const sdk = new Bytez(BYTEZ_KEY);
 
 // Auth API
@@ -225,7 +225,12 @@ export const summaries = {
 
 // Internal AI helpers
 async function processWithAI(title: string, notes: string) {
-    const model = sdk.model("openai/gpt-4o");
+    const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+
+    if (!OPENROUTER_API_KEY) {
+        throw new Error("OpenRouter API Key is missing. Please add it to .env.local");
+    }
+
     const system_prompt = `You are an expert meeting assistant. Analyze the provided meeting notes and extract:
     1. A concise summary (2-3 paragraphs)
     2. A list of key points
@@ -240,40 +245,45 @@ async function processWithAI(title: string, notes: string) {
         ]
     }`;
 
-    // Note: I changed the prompt to use 'task' directly to avoid mapping issues later
-
     const user_prompt = `Meeting Title: ${title}\n\nNotes:\n${notes}`;
 
-    const { error, output } = await model.run([
-        { role: 'system', content: system_prompt },
-        { role: 'user', content: user_prompt }
-    ]);
-
-    if (error) {
-        console.error("Bytez AI Error:", error);
-        throw new Error(`AI error: ${error}`);
-    }
-
-    if (!output) {
-        throw new Error("AI output is empty");
-    }
-
-    let content = typeof output === 'string' ? output : output.content;
-    if (!content) {
-        console.error("AI Output structure unexpected:", output);
-        throw new Error("AI output content is missing");
-    }
-
-    content = content.trim();
-    if (content.startsWith("```json")) {
-        content = content.replace(/^```json/, "").replace(/```$/, "").trim();
-    }
-
     try {
-        return JSON.parse(content);
-    } catch (parseError) {
-        console.error("Failed to parse AI JSON:", content);
-        throw new Error("Failed to parse AI response");
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+                "Content-Type": "application/json",
+                "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+                "X-Title": "Summriate",
+            },
+            body: JSON.stringify({
+                "model": "openai/gpt-4o", // You can change this to any OpenRouter model
+                "messages": [
+                    { "role": "system", "content": system_prompt },
+                    { "role": "user", "content": user_prompt }
+                ]
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`OpenRouter API Error: ${errorData.error?.message || response.statusText}`);
+        }
+
+        const data = await response.json();
+        const content = data.choices[0]?.message?.content;
+
+        if (!content) {
+            throw new Error("OpenRouter returned empty content");
+        }
+
+        // Parse JSON from content (handling potential markdown code blocks)
+        const cleanContent = content.replace(/^```json/, "").replace(/```$/, "").trim();
+        return JSON.parse(cleanContent);
+
+    } catch (error: any) {
+        console.error("AI Processing Error:", error);
+        throw new Error(`AI processing failed: ${error.message}`);
     }
 }
 
