@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Summriate - AI Smart Meeting Notes Generator",
-  description: "Automate your meeting notes with AI",
+  title: "OnboardAI - Master Any Codebase in Minutes",
+  description: "AI-powered onboarding engineer that helps developers understand codebases, map architectures, and create learning plans instantly.",
 };
 
 export default function RootLayout({
