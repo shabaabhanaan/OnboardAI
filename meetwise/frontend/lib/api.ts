@@ -168,6 +168,15 @@ export const summaries = {
         return summaries.create(title, fullNotes);
     },
 
+    processLink: async (url: string, title: string, notes?: string) => {
+        // 1. Transcribe URL (Bytez)
+        const transcription = await transcribeUrl(url);
+        const fullNotes = notes ? `${notes}\n\nRunning Transcription from URL:\n${transcription}` : transcription;
+
+        // 2. Create summary using the transcribed notes
+        return summaries.create(title, fullNotes);
+    },
+
     list: async () => {
         const { data, error } = await supabase
             .from('summaries')
@@ -287,6 +296,22 @@ async function transcribeAudio(file: File) {
 
     if (error) {
         console.error("Bytez Transcription Error:", error);
+        throw new Error(`Transcription error: ${error}`);
+    }
+
+    if (!output) throw new Error("Transcription output is empty");
+
+    return typeof output === 'string' ? output : output.text;
+}
+
+async function transcribeUrl(url: string) {
+    const model = sdk.model("openai/whisper-large-v3");
+
+    // Pass URL directly to Bytez
+    const { error, output } = await model.run(url);
+
+    if (error) {
+        console.error("Bytez URL Transcription Error:", error);
         throw new Error(`Transcription error: ${error}`);
     }
 

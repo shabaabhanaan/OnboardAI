@@ -20,6 +20,8 @@ export default function NewMeetingPage() {
     const [loading, setLoading] = useState(false);
 
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [videoUrl, setVideoUrl] = useState("");
+    const [inputType, setInputType] = useState<"file" | "url">("file");
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -34,11 +36,14 @@ export default function NewMeetingPage() {
 
         try {
             let summary;
-            if (selectedFile) {
+            if (inputType === "url" && videoUrl) {
+                // Use URL process endpoint
+                summary = await summaries.processLink(videoUrl, formData.title, formData.notes);
+            } else if (inputType === "file" && selectedFile) {
                 // Use upload endpoint
                 summary = await summaries.upload(selectedFile, formData.title, formData.notes);
             } else {
-                // Use existing create endpoint
+                // Use existing create endpoint (text only)
                 summary = await summaries.create(formData.title, formData.notes);
             }
             router.push(`/dashboard/${summary.id}`);
@@ -121,34 +126,71 @@ export default function NewMeetingPage() {
                                 />
                             </div>
 
-                            {/* File Upload Field */}
                             <div className="mb-6">
                                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                                    Upload Video/Audio File
+                                    Source
                                 </label>
-                                <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center hover:border-indigo-500 transition-colors">
-                                    <input
-                                        type="file"
-                                        accept="audio/*,video/*"
-                                        onChange={(e) => setSelectedFile(e.target.files ? e.target.files[0] : null)}
-                                        className="hidden"
-                                        id="file-upload"
-                                    />
-                                    <label
-                                        htmlFor="file-upload"
-                                        className="cursor-pointer flex flex-col items-center gap-2"
+                                <div className="flex gap-4 mb-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setInputType("file")}
+                                        className={`flex-1 py-2 px-4 rounded-lg border-2 font-medium transition-all ${inputType === "file"
+                                            ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400"
+                                            : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                                            }`}
                                     >
-                                        <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-                                            <Sparkles className="w-6 h-6" />
-                                        </div>
-                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            {selectedFile ? selectedFile.name : "Click to select a video or audio file"}
-                                        </span>
-                                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                                            Supports MP3, WAV, MP4, MOV (Max 25MB)
-                                        </span>
-                                    </label>
+                                        Upload File
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setInputType("url")}
+                                        className={`flex-1 py-2 px-4 rounded-lg border-2 font-medium transition-all ${inputType === "url"
+                                            ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400"
+                                            : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                                            }`}
+                                    >
+                                        Video Link
+                                    </button>
                                 </div>
+
+                                {inputType === "file" ? (
+                                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center hover:border-indigo-500 transition-colors">
+                                        <input
+                                            type="file"
+                                            accept="audio/*,video/*"
+                                            onChange={(e) => setSelectedFile(e.target.files ? e.target.files[0] : null)}
+                                            className="hidden"
+                                            id="file-upload"
+                                        />
+                                        <label
+                                            htmlFor="file-upload"
+                                            className="cursor-pointer flex flex-col items-center gap-2"
+                                        >
+                                            <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                                                <Sparkles className="w-6 h-6" />
+                                            </div>
+                                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                {selectedFile ? selectedFile.name : "Click to select a video or audio file"}
+                                            </span>
+                                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                Supports MP3, WAV, MP4, MOV (Max 25MB)
+                                            </span>
+                                        </label>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <input
+                                            type="url"
+                                            value={videoUrl}
+                                            onChange={(e) => setVideoUrl(e.target.value)}
+                                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-900 dark:text-gray-100 transition-all"
+                                            placeholder="Paste public video URL (e.g. https://example.com/video.mp4)"
+                                        />
+                                        <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                            Enter a direct link to a video or audio file.
+                                        </p>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Notes Field */}
@@ -185,7 +227,7 @@ export default function NewMeetingPage() {
                                 {loading ? (
                                     <>
                                         <Loader2 className="w-5 h-5 animate-spin" />
-                                        {selectedFile ? "Transcribing & Processing..." : "Processing..."}
+                                        {inputType === "url" ? "Processing URL..." : selectedFile ? "Transcribing & Processing..." : "Processing..."}
                                     </>
                                 ) : (
                                     <>
