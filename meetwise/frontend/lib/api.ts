@@ -268,12 +268,22 @@ async function processWithAI(title: string, notes: string) {
     }
 }
 
+// Helper to get Data URL from File
+const fileToDataURL = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+};
+
 async function transcribeAudio(file: File) {
     const model = sdk.model("openai/whisper-large-v3");
 
-    // Convert File to Buffer/ArrayBuffer for Bytez
-    const arrayBuffer = await file.arrayBuffer();
-    const { error, output } = await model.run(Buffer.from(arrayBuffer));
+    // Convert File to Data URL for Bytez (Browser-compatible)
+    const dataURL = await fileToDataURL(file);
+    const { error, output } = await model.run(dataURL);
 
     if (error) {
         console.error("Bytez Transcription Error:", error);
