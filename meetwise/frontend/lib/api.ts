@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 import Bytez from 'bytez.js';
 
-const BYTEZ_KEY = process.env.NEXT_PUBLIC_BYTEZ_KEY || '4fbe90a3c567502654a7a15933c24420';
+const BYTEZ_KEY = process.env.NEXT_PUBLIC_BYTEZ_KEY || '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';
 const sdk = new Bytez(BYTEZ_KEY);
 
 // Auth API
