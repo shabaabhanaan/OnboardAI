@@ -1,10 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+// Fallback to placeholder values to prevent build errors
+// This allows the build to finish, but runtime will fail if env vars are missing in Netlify
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('Supabase credentials missing. Please check your .env.local file.');
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    console.warn('⚠️ Supabase URL missing. Using placeholder for build.');
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
