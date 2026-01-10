@@ -1,44 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 OnboardAI
 
-## Summriate Frontend
+**OnboardAI** (formerly MeetWise/Summriate) is your personal **AI Onboarding Engineer**.
+It helps new developers master any codebase in minutes, not weeks, by analyzing GitHub repositories and generating interactive architecture guides and learning plans.
 
-First, run the development server:
+![OnboardAI Dashboard](https://via.placeholder.com/800x400?text=OnboardAI+Dashboard+Preview)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## ✨ Key Features
+
+-   **🧠 Senior Architect Analysis**: Instantly generates a high-level architecture overview of any project.
+-   **📂 Critical File Detection**: Identifies the most important files/modules to read first.
+-   **📅 Personalized Learning Plans**: Creates day-by-day onboarding tasks (Day 1: Setup, Day 2: First Feature, etc.).
+-   **🔗 One-Click GitHub Import**: Paste any public repo URL to start onboarding immediately.
+-   **🔒 Secure & Private**: Supports private repositories (Pro plan) and secure data handling.
+
+## 🛠️ Tech Stack
+
+-   **Frontend**: Next.js 14 (App Router), TypeScript, TailwindCSS
+-   **Database**: Supabase (PostgreSQL)
+-   **Auth**: Supabase Auth (Email/Password + Social Login)
+-   **AI Engine**: OpenRouter (GPT-4o)
+-   **Payments**: PayHere (Sri Lanka) integration
+-   **Deployment**: Netlify
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+-   Node.js 18+
+-   Supabase Account
+-   OpenRouter API Key
+
+### Installation
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/yourusername/onboardai.git
+    cd onboardai/frontend
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Environment Setup:**
+    Rename `.env.example` to `.env.local` and add your keys:
+    ```bash
+    NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+    NEXT_PUBLIC_OPENROUTER_API_KEY=your_openrouter_key
+    NEXT_PUBLIC_SITE_URL=http://localhost:3000
+    ```
+
+4.  **Run the development server:**
+    ```bash
+    npm run dev
+    ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📦 Deployment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Deploy on Netlify
 
-## Learn More
+1.  Push your code to a Git repository (GitHub, GitLab, etc).
+2.  Connect the repository to Netlify.
+3.  Netlify should automatically detect the `netlify.toml` configuration included in this project.
+4.  **Important**: Add your environment variables in the Netlify Dashboard under **Site settings > Environment variables**.
 
-To learn more about Next.js, take a look at the following resources:
+## 📄 License
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-## Deploy on Netlify
-
-1. Push your code to a Git repository (GitHub, GitLab, etc).
-2. Connect the repository to Netlify.
-3. Netlify should automatically detect the `netlify.toml` configuration.
-4. **Important**: Add your environment variables (SUPABASE_URL, etc.) in the Netlify Dashboard under **Site settings > Environment variables**.
-
+This project is licensed under the MIT License.
