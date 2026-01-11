@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ArrowLeft, Sparkles, Send, Loader2, Github } from "lucide-react";
 import { summaries } from "@/lib/api";
 import { useAuth } from "@/components/auth-provider";
-import UpgradePrompt from "@/components/UpgradePrompt";
+import PricingModal from "@/components/PricingModal";
 
 export default function NewMeetingPage() {
     const router = useRouter();
@@ -16,7 +16,7 @@ export default function NewMeetingPage() {
         notes: "",
     });
     const [error, setError] = useState("");
-    const [showUpgrade, setShowUpgrade] = useState(false);
+    const [showPricing, setShowPricing] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const [inputType, setInputType] = useState<"text" | "github">("text");
@@ -71,8 +71,8 @@ export default function NewMeetingPage() {
 
             router.push(`/dashboard/${summary.id}`);
         } catch (err: any) {
-            if (err.message?.includes("PLAN_LIMIT_REACHED")) {
-                setShowUpgrade(true);
+            if (err.message.includes("PLAN_LIMIT_REACHED")) {
+                setShowPricing(true);
             } else {
                 setError(err.message || "Failed to create summary");
             }
@@ -258,10 +258,9 @@ export default function NewMeetingPage() {
                 </div>
             </main >
 
-            {showUpgrade && (
-                <UpgradePrompt onClose={() => setShowUpgrade(false)} />
-            )
-            }
+            {showPricing && (
+                <PricingModal onClose={() => setShowPricing(false)} />
+            )}
         </div >
     );
 }

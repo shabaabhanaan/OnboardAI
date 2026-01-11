@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Plus, FileText, Calendar, LogOut, Sparkles, Loader2 } from "lucide-react";
 import { summaries, auth } from "@/lib/api";
 import { useAuth } from "@/components/auth-provider";
+import { Logo } from "@/components/Logo";
 
 interface Summary {
     id: string;
@@ -59,14 +60,7 @@ export default function DashboardPage() {
             <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
                 <div className="container mx-auto px-6 py-4">
                     <div className="flex items-center justify-between">
-                        <Link href="/dashboard" className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg">
-                                <Sparkles className="w-6 h-6 text-white" />
-                            </div>
-                            <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                                OnboardAI
-                            </h1>
-                        </Link>
+                        <Logo textSize="text-2xl" iconSize="w-6 h-6" href="/dashboard" />
 
                         <button
                             onClick={handleLogout}

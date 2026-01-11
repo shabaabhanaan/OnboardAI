@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { Sparkles, Check, X } from "lucide-react";
 
-interface UpgradePromptProps {
+interface PricingModalProps {
     onClose?: () => void;
 }
 
-export default function UpgradePrompt({ onClose }: UpgradePromptProps) {
+export default function PricingModal({ onClose }: PricingModalProps) {
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50 animate-fadeIn">
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">

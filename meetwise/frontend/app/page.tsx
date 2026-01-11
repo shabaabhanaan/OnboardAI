@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Sparkles, Brain, Zap, Shield } from "lucide-react";
+import { Logo } from "@/components/Logo";
 
 export default function Home() {
   const features = [
@@ -32,14 +33,13 @@ export default function Home() {
       {/* Hero Section */}
       <main className="container mx-auto px-6 pt-20 pb-16">
         <div className="text-center max-w-4xl mx-auto animate-fadeIn">
+          {/* Removed: import {Logo} from "@/components/Logo"; */}
+
+          {/* ... */}
+
           {/* Logo/Title */}
           <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg">
-              <Sparkles className="w-7 h-7 text-white" />
-            </div>
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              OnboardAI
-            </h1>
+            <Logo textSize="text-5xl" iconSize="w-12 h-12" />
           </div>
 
           {/* Tagline */}

@@ -1,5 +1,17 @@
 import { supabase } from './supabase';
 
+export interface ActionItem {
+    task: string;
+    assignee?: string;
+    priority?: string;
+}
+
+export interface OnboardingData {
+    summary: string;
+    key_points: string[];
+    action_items: ActionItem[];
+}
+
 export const auth = {
     register: async (username: string, email: string, password: string, plan: string = 'free') => {
         const { data, error } = await supabase.auth.signUp({
@@ -172,9 +184,9 @@ export const summaries = {
         // Map action items for frontend compatibility if needed
         return data.map(m => ({
             ...m,
-            action_items: m.action_items?.map((item: any) => ({
+            action_items: m.action_items?.map((item: ActionItem) => ({
                 ...item,
-                task: item.task || item.description // Map description to task
+                task: item.task || (item as any).description // Map description to task
             }))
         }));
     },
@@ -191,9 +203,9 @@ export const summaries = {
         // Map action items for frontend compatibility
         return {
             ...data,
-            action_items: data.action_items?.map((item: any) => ({
+            action_items: data.action_items?.map((item: ActionItem) => ({
                 ...item,
-                task: item.task || item.description
+                task: item.task || (item as any).description
             }))
         };
     },
@@ -209,7 +221,7 @@ export const summaries = {
 };
 
 // Internal AI helpers
-async function processWithAI(title: string, notes: string) {
+async function processWithAI(title: string, notes: string): Promise<OnboardingData> {
     const OPENROUTER_API_KEY = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
 
     if (!OPENROUTER_API_KEY) {

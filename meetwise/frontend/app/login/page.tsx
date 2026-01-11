@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, Sparkles } from "lucide-react";
 import { auth } from "@/lib/api";
+import { Logo } from "@/components/Logo";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -35,14 +36,9 @@ export default function LoginPage() {
             <div className="w-full max-w-md">
                 {/* Logo and Welcome Message */}
                 <div className="text-center mb-8">
-                    <Link href="/" className="flex items-center justify-center gap-3 mb-4">
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg">
-                            <Sparkles className="w-7 h-7 text-white" />
-                        </div>
-                        <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                            OnboardAI
-                        </h1>
-                    </Link>
+                    <div className="flex justify-center mb-4">
+                        <Logo />
+                    </div>
                     <p className="text-gray-600 dark:text-gray-400">
                         Welcome back
                     </p>
