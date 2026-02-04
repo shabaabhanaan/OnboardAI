@@ -2,8 +2,14 @@
 
 **OnboardAI** (formerly MeetWise/Summriate) is your personal **AI Onboarding Engineer**.
 It helps new developers master any codebase in minutes, not weeks, by analyzing GitHub repositories and generating interactive architecture guides and learning plans.
+![onboardai-preview png](https://github.com/user-attachments/assets/aacc2405-8419-42de-9eab-a2a8daf3d444)![photo_2026-01-11_19-05-19](https://github.com/user-attachments/assets/f5f75cd3-2062-4668-b96e-00fd4b4b65e7)
 
-![OnboardAI Dashboard](https://via.placeholder.com/800x400?text=OnboardAI+Dashboard+Preview)
+
+![OnboardAI Dashboard](https://via.placeholder.com/800x400?![photo_2026![photo_2026-01-11_19-05-23](https://github.com/user-attachments/assets/e74f9fa8-6eb6-4e01-aa13-9fb3f3a7f361)
+-01-11_19-05-14](https://github.com/user-attachments/assets/7477787a-3331-4298-8fd7-1f0ec15226da)![photo_2026-01-11_19-09-18](https://github.com/user-![photo_2026-01-11_19-05-40](https://github.com/user-attachments/assets/284aa792-fb36-4fc4-8508-829cd7d79d96)
+attachments/assets/18e44310-5686-41dd-ac28-b744226deb1a)
+
+text=OnboardAI+Dashboard+Preview)
 
 ## ✨ Key Features
 
