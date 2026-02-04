@@ -6,6 +6,7 @@ It helps new developers master any codebase in minutes, not weeks, by analyzing 
 ![photo_2026-01-11_19-09-18](https://github.com/user-attachments/assets/75f1bc51-61af-49b3-b653-90a0b4ed4091)
 ![photo_2026-01-11_19-05-40](https://github.com/user-attachments/assets/57ca0866-e29b-45fd-957b-8afdbfa3db36)
 
+![photo_2026-01-11_19-05-23](https://github.com/user-attachments/assets/aa9e9b88-83d6-424a-808c-040acca454d3)
 
 ![OnboardAI Dashboard](https://via.placeholder.com/800x400?![photo_2026![photo_2026-01-11_19-05-23](https://github.com/user-attachments/assets/e74f9fa8-6eb6-4e01-aa13-9fb3f3a7f361)
 -01-11_19-05-14](https://github.com/user-attachments/assets/7477787a-3331-4298-8fd7-1f0ec15226da)![photo_2026-01-11_19-09-18](https://github.com/user-![photo_2026-01-11_19-05-40](https://github.com/user-attachments/assets/284aa792-fb36-4fc4-8508-829cd7d79d96)
