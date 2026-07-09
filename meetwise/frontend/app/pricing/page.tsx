@@ -233,8 +233,8 @@ export default function PricingPage() {
                                     a: "Yes! You can upgrade or downgrade at any time. Changes take effect immediately and your billing will be prorated."
                                 },
                                 {
-                                    q: "What happens when I hit my summary limit on the free plan?",
-                                    a: "You'll be prompted to upgrade to Pro for unlimited summaries. Your existing summary will remain accessible."
+                                    q: "What happens when I hit my analysis limit on the free plan?",
+                                    a: "You'll be prompted to upgrade to Pro for unlimited repository analyses. Your existing analysis will remain accessible."
                                 },
                                 {
                                     q: "Is there a trial for the Pro plan?",

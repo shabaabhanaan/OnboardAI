@@ -19,7 +19,7 @@ export default function PricingModal({ onClose }: PricingModalProps) {
                                 Upgrade Your Plan
                             </h2>
                             <p className="text-gray-600 dark:text-gray-400">
-                                You've reached your free plan limit. Upgrade to continue creating summaries.
+                                You've reached your free plan limit. Upgrade to continue analyzing repositories.
                             </p>
                         </div>
                         {onClose && (
@@ -57,25 +57,25 @@ export default function PricingModal({ onClose }: PricingModalProps) {
                             <li className="flex items-start gap-3">
                                 <Check className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5 flex-shrink-0" />
                                 <span className="text-gray-700 dark:text-gray-300">
-                                    <strong>Unlimited</strong> video summaries
+                                    <strong>Unlimited</strong> repository analyses
                                 </span>
                             </li>
                             <li className="flex items-start gap-3">
                                 <Check className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5 flex-shrink-0" />
                                 <span className="text-gray-700 dark:text-gray-300">
-                                    AI-powered transcription
+                                    AI-powered codebase mapping
                                 </span>
                             </li>
                             <li className="flex items-start gap-3">
                                 <Check className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5 flex-shrink-0" />
                                 <span className="text-gray-700 dark:text-gray-300">
-                                    Key points extraction
+                                    Key files mapping
                                 </span>
                             </li>
                             <li className="flex items-start gap-3">
                                 <Check className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5 flex-shrink-0" />
                                 <span className="text-gray-700 dark:text-gray-300">
-                                    Action items identification
+                                    Learning plans generation
                                 </span>
                             </li>
                             <li className="flex items-start gap-3">

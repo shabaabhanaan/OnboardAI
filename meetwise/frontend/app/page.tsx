@@ -1,59 +1,79 @@
 "use client";
 
 import Link from "next/link";
-import { Sparkles, Brain, Zap, Shield } from "lucide-react";
+import { Sparkles, Brain, Zap, Shield, GitBranch, RefreshCw, MessageSquare, KeyRound } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { Footer } from "@/components/Footer";
 
 export default function Home() {
-  const features = [
+  const coreFeatures = [
     {
       icon: Brain,
       title: "Architecture Analysis",
-      description: "Understand the high-level design and data flow instantly"
+      description: "Instantly maps out high-level software designs and complex data flows so new developers can understand how the overall system connects without reading thousands of lines of code."
     },
     {
       icon: Zap,
       title: "Critical Path Detection",
-      description: "Identify the most important files and modules to read first"
+      description: "Automatically isolates and highlights the most vital files, entry points, and modules within a repository, directing the user exactly where they should start reading first."
     },
     {
       icon: Shield,
-      title: "So You Can Build Faster",
-      description: "Stop wasting weeks reading docs. Start contributing in days."
+      title: "Contextual Documentation Synthesis",
+      description: "Eliminates the frustration of wading through weeks of outdated internal wikis or sparse markdown docs, generating immediate clarity straight from the source code."
     },
     {
       icon: Sparkles,
-      title: "Personalized Plans",
-      description: "Get a day-by-day learning plan tailored to your role"
+      title: "Personalized Learning Plans",
+      description: "Dynamically curates a day-by-day onboarding strategy tailored specifically to the developer’s explicit role (e.g., separating frontend onboarding tracks from backend setups)."
+    }
+  ];
+
+  const backendCapabilities = [
+    {
+      icon: GitBranch,
+      title: "Dynamic GitHub/GitLab Integration",
+      description: "A seamless OAuth pipeline where an engineering lead pastes a repository link, allowing the system to securely scan and index the codebase."
+    },
+    {
+      icon: RefreshCw,
+      title: "Continuous Code Synchronization",
+      description: "Instead of a static map, the backend watches the repository branches and automatically updates the architecture overview every time a major Pull Request (PR) is merged."
+    },
+    {
+      icon: MessageSquare,
+      title: "Interactive AI Code Assistant",
+      description: "A chat window where engineers can ask codebase-specific questions (e.g., 'Where is the authentication middleware handled?' or 'How do I hook into our existing payment webhooks?') and get hyper-localized answers with direct file paths."
+    },
+    {
+      icon: KeyRound,
+      title: "Multi-Tier Enterprise Permissions",
+      description: "Role-based access control (RBAC) ensuring only authorized team members can scan internal proprietary code, combined with secure Bring-Your-Own-Key (BYOK) data models to protect intellectual property."
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-black dark:to-indigo-950">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-black dark:to-indigo-950 transition-colors duration-300">
       {/* Hero Section */}
       <main className="container mx-auto px-6 pt-20 pb-16">
-        <div className="text-center max-w-4xl mx-auto animate-fadeIn">
-          {/* Removed: import {Logo} from "@/components/Logo"; */}
-
-          {/* ... */}
-
+        <div className="text-center max-w-6xl mx-auto">
           {/* Logo/Title */}
-          <div className="flex items-center justify-center gap-3 mb-6">
+          <div className="flex items-center justify-center gap-3 mb-6 animate-fadeIn">
             <Logo textSize="text-5xl" iconSize="w-12 h-12" />
           </div>
 
           {/* Tagline */}
-          <p className="text-2xl md:text-3xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
+          <p className="text-2xl md:text-3xl font-semibold text-gray-800 dark:text-gray-100 mb-4 animate-fadeIn">
             Master Any Codebase in Minutes
           </p>
 
-          <p className="text-lg text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto animate-fadeIn">
             Stop getting lost in new projects. Paste a GitHub link, and get an instant architecture overview,
             critical file map, and personalized learning plan.
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-24 animate-fadeIn">
             <Link
               href="/register"
               className="group relative px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
@@ -70,34 +90,80 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Features Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-20">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <div
-                  key={index}
-                  className="group p-6 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 animate-fadeIn"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                    <Icon className="w-6 h-6 text-white" />
+          {/* Core Platform Features Section */}
+          <div className="mb-28">
+            <div className="text-center space-y-4 max-w-3xl mx-auto mb-16">
+              <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                Core Platform Features
+              </h2>
+              <p className="text-lg text-gray-600 dark:text-gray-400">
+                Supercharge engineering onboarding and knowledge transfer with our key client-facing capabilities.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+              {coreFeatures.map((feature, index) => {
+                const Icon = feature.icon;
+                return (
+                  <div
+                    key={index}
+                    className="group p-8 rounded-2xl bg-white dark:bg-gray-900/50 border border-gray-150 dark:border-gray-800 hover:border-indigo-500 dark:hover:border-indigo-500 hover:shadow-xl transition-all duration-300 flex gap-5 items-start"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                      <Icon className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                        {feature.title}
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+                        {feature.description}
+                      </p>
+                    </div>
                   </div>
+                );
+              })}
+            </div>
+          </div>
 
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">
-                    {feature.title}
-                  </h3>
+          {/* Monetizable & Scalable Backend Capabilities Section */}
+          <div className="mb-28">
+            <div className="text-center space-y-4 max-w-3xl mx-auto mb-16">
+              <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                Enterprise & Backend Capabilities
+              </h2>
+              <p className="text-lg text-gray-600 dark:text-gray-400">
+                Operational powerhouses designed to drive enterprise-grade security, code synchronization, and local interactions.
+              </p>
+            </div>
 
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {feature.description}
-                  </p>
-                </div>
-              );
-            })}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+              {backendCapabilities.map((capability, index) => {
+                const Icon = capability.icon;
+                return (
+                  <div
+                    key={index}
+                    className="group p-8 rounded-2xl bg-white dark:bg-gray-900/50 border border-gray-150 dark:border-gray-800 hover:border-purple-500 dark:hover:border-purple-500 hover:shadow-xl transition-all duration-300 flex gap-5 items-start"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                      <Icon className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                        {capability.title}
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+                        {capability.description}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* How It Works */}
-          <div className="mt-24">
+          <div className="mt-24 mb-16">
             <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-12">
               How It Works
             </h2>
@@ -126,9 +192,7 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="text-center py-8 text-gray-600 dark:text-gray-400 border-t border-gray-200 dark:border-gray-800">
-        <p>© 2024 OnboardAI. Powered by AI.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

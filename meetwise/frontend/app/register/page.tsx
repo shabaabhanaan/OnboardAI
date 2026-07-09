@@ -54,7 +54,7 @@ export default function RegisterPage() {
                         Create Account
                     </h2>
                     <p className="text-gray-600 dark:text-gray-400 mb-6">
-                        Choose your plan and start transcribing
+                        Choose your plan and start mapping repositories
                     </p>
 
                     {error && (
@@ -121,86 +121,64 @@ export default function RegisterPage() {
 
                         {/* Plan Selection */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Choose Your Plan
                             </label>
-                            <div className="grid grid-cols-1 gap-3">
+                            <div className="grid grid-cols-3 gap-2">
                                 {/* Free Plan */}
                                 <button
                                     type="button"
                                     onClick={() => setFormData({ ...formData, plan: "free" })}
-                                    className={`p-4 border-2 rounded-lg text-left transition-all ${formData.plan === "free"
-                                        ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20"
-                                        : "border-gray-300 dark:border-gray-600 hover:border-indigo-400"
+                                    className={`p-2.5 border-2 rounded-lg text-center transition-all flex flex-col items-center justify-between min-h-[90px] relative ${formData.plan === "free"
+                                        ? "border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30"
+                                        : "border-gray-200 dark:border-gray-700 hover:border-indigo-400"
                                         }`}
                                 >
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <h3 className="font-semibold text-gray-800 dark:text-gray-100">Free</h3>
-                                                <span className="text-xs px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full">
-                                                    $0/month
-                                                </span>
-                                            </div>
-                                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                Perfect to try out • 1 summary limit
-                                            </p>
-                                        </div>
-                                        {formData.plan === "free" && (
-                                            <Check className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                                        )}
-                                    </div>
+                                    <div className="text-xs font-bold text-gray-900 dark:text-gray-100">Free</div>
+                                    <div className="text-[10px] text-green-600 dark:text-green-400 font-semibold my-0.5">$0/month</div>
+                                    <div className="text-[9px] text-gray-500 dark:text-gray-400 leading-tight">1 repo limit</div>
+                                    {formData.plan === "free" && (
+                                        <div className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-indigo-600"></div>
+                                    )}
                                 </button>
 
                                 {/* Pro Plan */}
                                 <button
                                     type="button"
                                     onClick={() => setFormData({ ...formData, plan: "pro" })}
-                                    className={`p-4 border-2 rounded-lg text-left transition-all ${formData.plan === "pro"
-                                        ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20"
-                                        : "border-gray-300 dark:border-gray-600 hover:border-indigo-400"
+                                    className={`p-2.5 border-2 rounded-lg text-center transition-all flex flex-col items-center justify-between min-h-[90px] relative ${formData.plan === "pro"
+                                        ? "border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30"
+                                        : "border-gray-200 dark:border-gray-700 hover:border-indigo-400"
                                         }`}
                                 >
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <h3 className="font-semibold text-gray-800 dark:text-gray-100">Pro</h3>
-                                                <span className="text-xs px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full">
-                                                    Popular
-                                                </span>
-                                            </div>
-                                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                For professionals • Unlimited summaries
-                                            </p>
-                                        </div>
-                                        {formData.plan === "pro" && (
-                                            <Check className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                                        )}
+                                    <div className="text-xs font-bold text-gray-900 dark:text-gray-100 flex items-center gap-1">
+                                        Pro
+                                        <span className="text-[8px] px-1 py-0.2 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 rounded font-normal">
+                                            Pop
+                                        </span>
                                     </div>
+                                    <div className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold my-0.5">Unlimited</div>
+                                    <div className="text-[9px] text-gray-500 dark:text-gray-400 leading-tight">Personal projects</div>
+                                    {formData.plan === "pro" && (
+                                        <div className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-indigo-600"></div>
+                                    )}
                                 </button>
 
                                 {/* Team Plan */}
                                 <button
                                     type="button"
                                     onClick={() => setFormData({ ...formData, plan: "team" })}
-                                    className={`p-4 border-2 rounded-lg text-left transition-all ${formData.plan === "team"
-                                        ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20"
-                                        : "border-gray-300 dark:border-gray-600 hover:border-indigo-400"
+                                    className={`p-2.5 border-2 rounded-lg text-center transition-all flex flex-col items-center justify-between min-h-[90px] relative ${formData.plan === "team"
+                                        ? "border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30"
+                                        : "border-gray-200 dark:border-gray-700 hover:border-indigo-400"
                                         }`}
                                 >
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <h3 className="font-semibold text-gray-800 dark:text-gray-100">Team</h3>
-                                            </div>
-                                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                For teams • Unlimited summaries + collaboration
-                                            </p>
-                                        </div>
-                                        {formData.plan === "team" && (
-                                            <Check className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                                        )}
-                                    </div>
+                                    <div className="text-xs font-bold text-gray-900 dark:text-gray-100">Team</div>
+                                    <div className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold my-0.5">Collab</div>
+                                    <div className="text-[9px] text-gray-500 dark:text-gray-400 leading-tight">For organizations</div>
+                                    {formData.plan === "team" && (
+                                        <div className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-indigo-600"></div>
+                                    )}
                                 </button>
                             </div>
                         </div>

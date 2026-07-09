@@ -50,7 +50,7 @@ export default function LoginPage() {
                         Welcome Back
                     </h2>
                     <p className="text-gray-600 dark:text-gray-400 mb-6">
-                        Sign in to access your meetings
+                        Sign in to map your codebases
                     </p>
 
                     {error && (
