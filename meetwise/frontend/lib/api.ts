@@ -4,12 +4,20 @@ export interface ActionItem {
     task: string;
     assignee?: string;
     priority?: string;
+    completed?: boolean;
 }
 
 export interface OnboardingData {
     summary: string;
     key_points: string[];
     action_items: ActionItem[];
+    health_audit?: {
+        score: string;
+        positives: string[];
+        friction_points: string[];
+        recommendations: string[];
+    };
+    dependency_graph?: string;
 }
 
 export const auth = {
@@ -119,8 +127,8 @@ export const isAuthenticated = async (): Promise<boolean> => {
     return !!session;
 };
 
-// Summaries API
-export const summaries = {
+// Onboardings API
+export const onboardings = {
     create: async (title: string, notes: string) => {
         // 1. Get current user and check plan limits
         const { data: { user } } = await supabase.auth.getUser();
@@ -136,12 +144,12 @@ export const summaries = {
         // Check usage limits for free plan
         if (profile?.plan === 'free') {
             const { count } = await supabase
-                .from('summaries')
+                .from('onboardings')
                 .select('*', { count: 'exact', head: true })
                 .eq('user_id', user.id);
 
             if (count !== null && count >= 1) {
-                throw new Error('PLAN_LIMIT_REACHED: Free plan allows only 1 summary. Please upgrade to Pro or Team plan for unlimited summaries.');
+                throw new Error('PLAN_LIMIT_REACHED: Free plan allows only 1 onboarding. Please upgrade to Pro or Team plan for unlimited onboardings.');
             }
         }
 
@@ -150,13 +158,15 @@ export const summaries = {
 
         // 3. Insert into Supabase
         const { data, error } = await supabase
-            .from('summaries')
+            .from('onboardings')
             .insert([{
                 title,
                 notes,
                 summary: aiResult.summary,
                 key_points: aiResult.key_points || [],
-                action_items: aiResult.action_items || [],
+                action_items: (aiResult.action_items || []).map(item => ({ ...item, completed: false })),
+                health_audit: aiResult.health_audit || {},
+                dependency_graph: aiResult.dependency_graph || "",
                 user_id: user.id
             }])
             .select()
@@ -176,7 +186,7 @@ export const summaries = {
 
     list: async () => {
         const { data, error } = await supabase
-            .from('summaries')
+            .from('onboardings')
             .select('*')
             .order('created_at', { ascending: false });
 
@@ -193,7 +203,7 @@ export const summaries = {
 
     get: async (id: string) => {
         const { data, error } = await supabase
-            .from('summaries')
+            .from('onboardings')
             .select('*')
             .eq('id', id)
             .single();
@@ -212,13 +222,28 @@ export const summaries = {
 
     delete: async (id: string) => {
         const { error } = await supabase
-            .from('summaries')
+            .from('onboardings')
             .delete()
             .eq('id', id);
 
         if (error) throw error;
     },
+
+    updateActionItems: async (id: string, actionItems: ActionItem[]) => {
+        const { data, error } = await supabase
+            .from('onboardings')
+            .update({ action_items: actionItems })
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    },
 };
+
+// Keep summaries alias for backwards compatibility during migration
+export const summaries = onboardings;
 
 // Internal AI helpers
 async function processWithAI(title: string, notes: string): Promise<OnboardingData> {
@@ -235,16 +260,25 @@ async function processWithAI(title: string, notes: string): Promise<OnboardingDa
     Provide the following structured onboarding guide:
     1. **Architecture Overview**: Explain the high-level design, main components, and data flow (mapped to 'summary').
     2. **Critical Files & Modules**: Highlight the most important files/directories a new dev should read first (mapped to 'key_points').
-    3. **Learning Plan**: A step-by-step specific guide (Day 1, Day 2, etc.) with exercises to master the project (mapped to 'action_items').
+    3. **Learning Plan**: A step-by-step specific guide (Day 1, Day 2, etc.) with exercises to master the project (mapped to 'action_items'). Add a "completed" boolean property (default false) to each.
+    4. **Codebase Onboarding Health Score & Friction Auditor**: Evaluate setup difficulty, missing config templates, or missing documentation (mapped to 'health_audit').
+    5. **Dependency Graph**: Create a Mermaid flowchart representing key folders and libraries (mapped to 'dependency_graph').
     
     Return ONLY valid JSON in the following format:
     {
         "summary": "This project uses a Microservices architecture with...",
         "key_points": ["src/api/auth.ts - Handles JWT logic...", "config/db.js - Database connection pool...", "frontend/App.tsx - Main entry point..."],
         "action_items": [
-            {"task": "Day 1: Read auth flow and run local build", "assignee": "New Hire", "priority": "High"},
-            {"task": "Day 2: Implement a dummy API endpoint", "assignee": "New Hire", "priority": "Medium"}
-        ]
+            {"task": "Day 1: Read auth flow and run local build", "assignee": "New Hire", "priority": "High", "completed": false},
+            {"task": "Day 2: Implement a dummy API endpoint", "assignee": "New Hire", "priority": "Medium", "completed": false}
+        ],
+        "health_audit": {
+            "score": "B",
+            "positives": ["Readme file is very clear", "Uses Docker Compose for DB setup"],
+            "friction_points": ["Missing .env.example template", "No testing framework configured"],
+            "recommendations": ["Create a .env.example file", "Add Vitest or Jest setup guide"]
+        },
+        "dependency_graph": "graph TD\\n  A[Frontend] --> B[API Router]\\n  B --> C[Supabase Database]"
     }`;
 
     const user_prompt = `Project Name: ${title}\n\nCodebase Context/Documentation:\n${notes}`;

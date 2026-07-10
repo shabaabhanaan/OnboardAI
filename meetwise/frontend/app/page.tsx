@@ -53,7 +53,13 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-black dark:to-indigo-950 transition-colors duration-300">
+    <div className="relative min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-black dark:to-indigo-950 transition-colors duration-300 overflow-hidden">
+      {/* Modern Grid & Glow Pattern */}
+      <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+      <div className="absolute top-[-10%] left-[-10%] -z-10 w-[50%] h-[50%] bg-indigo-200/50 dark:bg-indigo-900/20 rounded-full blur-[120px] pointer-events-none animate-pulse duration-[8s]"></div>
+      <div className="absolute top-[20%] right-[-10%] -z-10 w-[45%] h-[45%] bg-purple-200/50 dark:bg-purple-900/20 rounded-full blur-[120px] pointer-events-none animate-pulse duration-[10s]"></div>
+      <div className="absolute bottom-[10%] left-[5%] -z-10 w-[30%] h-[30%] bg-indigo-200/30 dark:bg-indigo-900/10 rounded-full blur-[120px] pointer-events-none"></div>
+
       {/* Hero Section */}
       <main className="container mx-auto px-6 pt-20 pb-16">
         <div className="text-center max-w-6xl mx-auto">

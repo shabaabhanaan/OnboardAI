@@ -14,9 +14,12 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 );
 
 -- ============================================
--- 2. CREATE SUMMARIES TABLE
+-- 2. CREATE ONBOARDINGS TABLE
 -- ============================================
-CREATE TABLE IF NOT EXISTS public.summaries (
+-- Rename existing table summaries to onboardings if it exists
+ALTER TABLE IF EXISTS public.summaries RENAME TO onboardings;
+
+CREATE TABLE IF NOT EXISTS public.onboardings (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
     title TEXT NOT NULL,
@@ -24,6 +27,8 @@ CREATE TABLE IF NOT EXISTS public.summaries (
     summary TEXT,
     key_points JSONB DEFAULT '[]'::jsonb,
     action_items JSONB DEFAULT '[]'::jsonb,
+    health_audit JSONB DEFAULT '{}'::jsonb,
+    dependency_graph TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -31,15 +36,15 @@ CREATE TABLE IF NOT EXISTS public.summaries (
 -- ============================================
 -- 3. CREATE INDEXES FOR PERFORMANCE
 -- ============================================
-CREATE INDEX IF NOT EXISTS idx_summaries_user_id ON public.summaries(user_id);
-CREATE INDEX IF NOT EXISTS idx_summaries_created_at ON public.summaries(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_onboardings_user_id ON public.onboardings(user_id);
+CREATE INDEX IF NOT EXISTS idx_onboardings_created_at ON public.onboardings(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
 
 -- ============================================
 -- 4. ENABLE ROW LEVEL SECURITY (RLS)
 -- ============================================
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.summaries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.onboardings ENABLE ROW LEVEL SECURITY;
 
 -- ============================================
 -- 5. CREATE RLS POLICIES FOR PROFILES
@@ -65,31 +70,31 @@ CREATE POLICY "Users can update own profile"
     WITH CHECK (auth.uid() = id);
 
 -- ============================================
--- 6. CREATE RLS POLICIES FOR SUMMARIES
+-- 6. CREATE RLS POLICIES FOR ONBOARDINGS
 -- ============================================
 
--- Users can view their own summaries
-CREATE POLICY "Users can view own summaries"
-    ON public.summaries
+-- Users can view their own onboardings
+CREATE POLICY "Users can view own onboardings"
+    ON public.onboardings
     FOR SELECT
     USING (auth.uid() = user_id);
 
--- Users can insert their own summaries
-CREATE POLICY "Users can insert own summaries"
-    ON public.summaries
+-- Users can insert their own onboardings
+CREATE POLICY "Users can insert own onboardings"
+    ON public.onboardings
     FOR INSERT
     WITH CHECK (auth.uid() = user_id);
 
--- Users can update their own summaries
-CREATE POLICY "Users can update own summaries"
-    ON public.summaries
+-- Users can update their own onboardings
+CREATE POLICY "Users can update own onboardings"
+    ON public.onboardings
     FOR UPDATE
     USING (auth.uid() = user_id)
     WITH CHECK (auth.uid() = user_id);
 
--- Users can delete their own summaries
-CREATE POLICY "Users can delete own summaries"
-    ON public.summaries
+-- Users can delete their own onboardings
+CREATE POLICY "Users can delete own onboardings"
+    ON public.onboardings
     FOR DELETE
     USING (auth.uid() = user_id);
 
@@ -113,9 +118,9 @@ CREATE TRIGGER update_profiles_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
-DROP TRIGGER IF EXISTS update_summaries_updated_at ON public.summaries;
-CREATE TRIGGER update_summaries_updated_at
-    BEFORE UPDATE ON public.summaries
+DROP TRIGGER IF EXISTS update_onboardings_updated_at ON public.onboardings;
+CREATE TRIGGER update_onboardings_updated_at
+    BEFORE UPDATE ON public.onboardings
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
@@ -124,6 +129,6 @@ CREATE TRIGGER update_summaries_updated_at
 -- ============================================
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT ALL ON public.profiles TO authenticated;
-GRANT ALL ON public.summaries TO authenticated;
+GRANT ALL ON public.onboardings TO authenticated;
 GRANT SELECT ON public.profiles TO anon;
-GRANT SELECT ON public.summaries TO anon;
+GRANT SELECT ON public.onboardings TO anon;
