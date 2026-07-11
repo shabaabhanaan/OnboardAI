@@ -113,6 +113,11 @@ export default function MeetingDetailPage() {
     const [reviewLoading, setReviewLoading] = useState(false);
     const [reviewsLoadingHistory, setReviewsLoadingHistory] = useState(false);
 
+    // Health Audit Details States
+    const [expandedFrictionIndex, setExpandedFrictionIndex] = useState<number | null>(null);
+    const [expandedRecIndex, setExpandedRecIndex] = useState<number | null>(null);
+    const [expandedTaskIndex, setExpandedTaskIndex] = useState<number | null>(null);
+
     useEffect(() => {
         if (typeof window !== "undefined") {
             setWebhookUrl(`${window.location.origin}/api/webhooks/github`);
@@ -457,6 +462,79 @@ export default function MeetingDetailPage() {
         return { desc, upstream, downstream };
     };
 
+    const getHealthAuditDetails = (itemText: string) => {
+        const text = itemText.toLowerCase();
+        if (text.includes("readme")) {
+            return {
+                severity: "High",
+                impact: "Without a setup guide, new hires spend hours guessing configuration rules, command scripts, and installation steps.",
+                context: "No README.md or similar installation file found in the root directory.",
+                template: `# Project Name\n\n## Get Started\n1. Install dependencies:\n   \`\`\`bash\n   npm install\n   \`\`\`\n2. Configure variables:\n   Copy \`.env.example\` to \`.env.local\`\n3. Run development server:\n   \`\`\`bash\n   npm run dev\n   \`\`\``
+            };
+        }
+        if (text.includes(".env") || text.includes("environment")) {
+            return {
+                severity: "High",
+                impact: "Developers face runtime errors or database connection failures when key credentials are not outlined.",
+                context: "References to process.env variables (Supabase URL, Anon Key, OpenRouter) exist but no .env.example file exists.",
+                template: `# Environment variables template\nNEXT_PUBLIC_SUPABASE_URL=your_supabase_url\nNEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key\nNEXT_PUBLIC_OPENROUTER_API_KEY=your_openrouter_api_key`
+            };
+        }
+        if (text.includes("test") || text.includes("testing")) {
+            return {
+                severity: "Medium",
+                impact: "Developers cannot verify their code changes for regressions locally before submitting Pull Requests.",
+                context: "No testing configurations (Jest, Cypress, Playwright, Vitest) detected in codebase.",
+                template: `// To install Jest:\n// npm install --save-dev jest @types/jest ts-jest\n\nmodule.exports = {\n  preset: 'ts-jest',\n  testEnvironment: 'node',\n};`
+            };
+        }
+        return {
+            severity: "Low",
+            impact: "A minor detail that can be improved to streamline codebase documentation.",
+            context: "General improvement suggestion.",
+            template: null
+        };
+    };
+
+    const getLearningTaskDetails = (taskText: string) => {
+        const text = taskText.toLowerCase();
+        if (text.includes("auth") || text.includes("build") || text.includes("structure") || text.includes("day 1")) {
+            return {
+                objective: "Explore the directory structure, identify entry points, and test compiling the app locally.",
+                instructions: [
+                    "Locate code modules: check folder structures like /src/auth.ts or /app/api/auth.",
+                    "Verify node dependencies: run 'npm install' in the project folder.",
+                    "Run a local test build: run 'npm run build' in terminal to compile the application and verify typescript type safety.",
+                    "Verify JWT structure: examine how user sessions are stored and validated."
+                ],
+                files: ["src/auth.ts", "package.json"],
+                code: `// To verify your local server build, run this in your terminal:\n$ npm install\n$ npm run build`
+            };
+        }
+        if (text.includes("database") || text.includes("connection") || text.includes("query") || text.includes("day 2")) {
+            return {
+                objective: "Locate Supabase or standard database pool configs, write queries, and check connection logs.",
+                instructions: [
+                    "Open database connector files (like database/connection.js or supabase/schema.sql).",
+                    "Verify local variables: ensure supabase keys exist in .env.local.",
+                    "Execute query: write a basic SELECT statement inside your route to fetch active records."
+                ],
+                files: ["database/connection.js", "supabase/schema.sql", ".env.local"],
+                code: `-- Verify database connection:\nSELECT 1;\n\n-- Create example table:\nCREATE TABLE test_connection (\n  id SERIAL PRIMARY KEY,\n  checked_at TIMESTAMP DEFAULT NOW()\n);`
+            };
+        }
+        return {
+            objective: "Complete designated onboarding milestones defined for this repository.",
+            instructions: [
+                "Locate the related code files.",
+                "Implement modifications matching task description details.",
+                "Review code changes against design patterns."
+            ],
+            files: ["N/A"],
+            code: null
+        };
+    };
+
     return (
         <div className="flex h-screen bg-slate-50 dark:bg-gray-950 text-slate-900 dark:text-slate-100 overflow-hidden font-sans relative">
             {/* Mobile Sidebar backdrop overlay */}
@@ -630,8 +708,110 @@ export default function MeetingDetailPage() {
                                         High-Level Architecture Overview
                                     </h3>
                                 </div>
-                                <div className="prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 leading-relaxed text-lg whitespace-pre-wrap">
+                                <div className="prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 leading-relaxed text-sm whitespace-pre-wrap">
                                     {summary.summary}
+                                </div>
+
+                                {/* System Integration Sequence Diagram */}
+                                <div className="pt-6 border-t border-gray-150 dark:border-gray-750 space-y-4">
+                                    <h4 className="font-extrabold text-xs text-slate-800 dark:text-white uppercase tracking-wider">
+                                        System Integration Sequence Diagram
+                                    </h4>
+                                    <div className="p-6 bg-slate-50 dark:bg-gray-900/50 rounded-2xl border border-slate-150 dark:border-gray-800 overflow-x-auto">
+                                        <div className="min-w-[600px] space-y-6">
+                                            {/* Actors / Lifelines Headers */}
+                                            <div className="grid grid-cols-4 text-center font-bold text-xs">
+                                                <div className="p-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-lg">GitHub Client</div>
+                                                <div className="p-2 bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-lg">Webhook API</div>
+                                                <div className="p-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg">OpenRouter AI</div>
+                                                <div className="p-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-lg">Supabase DB</div>
+                                            </div>
+
+                                            {/* Lifeline vertical dashes & messages container */}
+                                            <div className="relative h-[280px] mt-4">
+                                                {/* Lifeline Vertical Tracks */}
+                                                <div className="absolute inset-0 grid grid-cols-4 pointer-events-none">
+                                                    <div className="h-full border-r border-dashed border-gray-300 dark:border-gray-700 mx-auto w-0"></div>
+                                                    <div className="h-full border-r border-dashed border-gray-300 dark:border-gray-700 mx-auto w-0"></div>
+                                                    <div className="h-full border-r border-dashed border-gray-300 dark:border-gray-700 mx-auto w-0"></div>
+                                                    <div className="h-full border-r border-dashed border-gray-300 dark:border-gray-700 mx-auto w-0"></div>
+                                                </div>
+
+                                                {/* Message 1: GitHub Client -> Webhook API */}
+                                                <div className="absolute top-[20px] left-[12.5%] w-[25%] flex flex-col items-center">
+                                                    <span className="text-[9px] font-extrabold text-indigo-600 bg-white dark:bg-gray-900 px-2 py-0.5 border border-indigo-200 dark:border-indigo-900 rounded shadow-sm z-10 -translate-y-2">
+                                                        1. Git Push Payload
+                                                    </span>
+                                                    <div className="w-full flex items-center justify-end relative h-3">
+                                                        <div className="w-full border-t-2 border-indigo-500"></div>
+                                                        <ArrowRight className="w-3 h-3 text-indigo-500 absolute -right-1.5 -top-1" />
+                                                    </div>
+                                                </div>
+
+                                                {/* Message 2: Webhook API -> OpenRouter AI */}
+                                                <div className="absolute top-[85px] left-[37.5%] w-[25%] flex flex-col items-center">
+                                                    <span className="text-[9px] font-extrabold text-purple-600 bg-white dark:bg-gray-900 px-2 py-0.5 border border-purple-200 dark:border-purple-900 rounded shadow-sm z-10 -translate-y-2">
+                                                        2. Match Commits with Tasks
+                                                    </span>
+                                                    <div className="w-full flex items-center justify-end relative h-3">
+                                                        <div className="w-full border-t-2 border-purple-500"></div>
+                                                        <ArrowRight className="w-3 h-3 text-purple-500 absolute -right-1.5 -top-1" />
+                                                    </div>
+                                                </div>
+
+                                                {/* Message 3: OpenRouter AI -> Webhook API (Returns matches) */}
+                                                <div className="absolute top-[150px] left-[37.5%] w-[25%] flex flex-col items-center">
+                                                    <span className="text-[9px] font-extrabold text-emerald-600 bg-white dark:bg-gray-900 px-2 py-0.5 border border-emerald-200 dark:border-emerald-900 rounded shadow-sm z-10 -translate-y-2">
+                                                        3. Return Semantic Matches
+                                                    </span>
+                                                    <div className="w-full flex items-center justify-start relative h-3">
+                                                        <ArrowLeft className="w-3 h-3 text-emerald-500 absolute -left-1.5 -top-1" />
+                                                        <div className="w-full border-t-2 border-dashed border-emerald-500"></div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Message 4: Webhook API -> Supabase DB */}
+                                                <div className="absolute top-[215px] left-[37.5%] w-[50%] flex flex-col items-center">
+                                                    <span className="text-[9px] font-extrabold text-amber-600 bg-white dark:bg-gray-900 px-2 py-0.5 border border-amber-200 dark:border-amber-900 rounded shadow-sm z-10 -translate-y-2">
+                                                        4. Save Checklist & Sync Logs
+                                                    </span>
+                                                    <div className="w-full flex items-center justify-end relative h-3">
+                                                        <div className="w-full border-t-2 border-amber-500"></div>
+                                                        <ArrowRight className="w-3 h-3 text-amber-500 absolute -right-1.5 -top-1" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* UML Core Components Structure */}
+                                <div className="pt-6 border-t border-gray-150 dark:border-gray-750 space-y-4">
+                                    <h4 className="font-extrabold text-xs text-slate-800 dark:text-white uppercase tracking-wider">
+                                        UML Core System Module Architecture
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+                                        <div className="p-4 bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-gray-800 rounded-xl space-y-2">
+                                            <span className="text-[11px] font-black text-indigo-600 uppercase tracking-wide">Client Interface</span>
+                                            <h5 className="font-extrabold text-xs">Dashboard Workspace</h5>
+                                            <p className="text-[11px] text-gray-500 leading-relaxed">Renders flow explorer pipelines, chat guides, reviews log panels, and settings tabs.</p>
+                                        </div>
+                                        <div className="p-4 bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-gray-800 rounded-xl space-y-2">
+                                            <span className="text-[11px] font-black text-purple-600 uppercase tracking-wide">Orchestration</span>
+                                            <h5 className="font-extrabold text-xs">LLM Agent Router</h5>
+                                            <p className="text-[11px] text-gray-500 leading-relaxed">Delegates contextual guidance queries, code reviews, and issue locations to OpenRouter models.</p>
+                                        </div>
+                                        <div className="p-4 bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-gray-800 rounded-xl space-y-2">
+                                            <span className="text-[11px] font-black text-emerald-650 uppercase tracking-wide">Sync Gateway</span>
+                                            <h5 className="font-extrabold text-xs">Webhook Receiver</h5>
+                                            <p className="text-[11px] text-gray-500 leading-relaxed">Listens for branch pushes, analyzes diffs, updates embeddings, and triggers auto-checklist reviews.</p>
+                                        </div>
+                                        <div className="p-4 bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-gray-800 rounded-xl space-y-2">
+                                            <span className="text-[11px] font-black text-amber-600 uppercase tracking-wide">Data Core</span>
+                                            <h5 className="font-extrabold text-xs">Supabase Database</h5>
+                                            <p className="text-[11px] text-gray-500 leading-relaxed">Stores user profiles, onboarding notes, task items, review records, and webhook push logs.</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -814,46 +994,108 @@ export default function MeetingDetailPage() {
                                 </div>
 
                                 <div className="space-y-4">
-                                    {summary.action_items && summary.action_items.map((item, index) => (
-                                        <div
-                                            key={index}
-                                            onClick={() => !updatingTasks && handleToggleTask(index)}
-                                            className={`p-5 rounded-2xl border transition-all duration-300 cursor-pointer flex items-start gap-4 select-none ${
-                                                item.completed
-                                                    ? "bg-indigo-50/20 dark:bg-indigo-950/10 border-indigo-200 dark:border-indigo-900 opacity-75"
-                                                    : "bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-md"
-                                            }`}
-                                        >
-                                            <div className="mt-0.5 shrink-0">
-                                                <div className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-colors ${
+                                    {summary.action_items && summary.action_items.map((item, index) => {
+                                        const isExpanded = expandedTaskIndex === index;
+                                        const details = getLearningTaskDetails(item.task);
+                                        return (
+                                            <div
+                                                key={index}
+                                                className={`border rounded-2xl overflow-hidden transition-all duration-300 ${
                                                     item.completed
-                                                        ? "bg-indigo-600 border-indigo-600 text-white"
-                                                        : "border-gray-300 dark:border-gray-700 bg-white dark:bg-black"
-                                                }`}>
-                                                    {item.completed && <CheckCircle2 className="w-4 h-4 stroke-[3]" />}
-                                                </div>
-                                            </div>
+                                                        ? "bg-indigo-50/10 dark:bg-indigo-950/5 border-indigo-200/60 dark:border-indigo-900/60 opacity-90"
+                                                        : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-md"
+                                                }`}
+                                            >
+                                                {/* Header / Clickable Card Body */}
+                                                <div 
+                                                    onClick={() => setExpandedTaskIndex(isExpanded ? null : index)}
+                                                    className="p-5 flex items-start gap-4 cursor-pointer select-none"
+                                                >
+                                                    {/* Checkbox Trigger block */}
+                                                    <div 
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            if (!updatingTasks) handleToggleTask(index);
+                                                        }}
+                                                        className="mt-0.5 shrink-0"
+                                                    >
+                                                        <div className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-colors cursor-pointer ${
+                                                            item.completed
+                                                                ? "bg-indigo-650 border-indigo-650 text-white"
+                                                                : "border-gray-300 dark:border-gray-700 bg-white dark:bg-black hover:border-indigo-500"
+                                                        }`}>
+                                                            {item.completed && <CheckCircle2 className="w-4 h-4 stroke-[3]" />}
+                                                        </div>
+                                                    </div>
 
-                                            <div className="flex-1 space-y-2">
-                                                <p className={`font-semibold text-gray-850 dark:text-gray-150 leading-relaxed text-sm ${
-                                                    item.completed ? "line-through text-gray-400 dark:text-gray-500" : ""
-                                                }`}>
-                                                    {item.task}
-                                                </p>
-                                                {item.assignee && (
-                                                    <p className="text-xs text-gray-400 dark:text-gray-500">
-                                                        Assigned role: <span className="font-bold text-gray-500 dark:text-gray-400">{item.assignee}</span>
-                                                    </p>
+                                                    <div className="flex-1 space-y-2">
+                                                        <p className={`font-bold text-gray-850 dark:text-gray-150 leading-relaxed text-sm ${
+                                                            item.completed ? "line-through text-gray-400 dark:text-gray-500" : ""
+                                                        }`}>
+                                                            {item.task}
+                                                        </p>
+                                                        <div className="flex items-center gap-4 text-xs text-gray-450 dark:text-gray-550">
+                                                            {item.assignee && (
+                                                                <span>
+                                                                    Role: <span className="font-bold text-gray-500 dark:text-gray-400">{item.assignee}</span>
+                                                                </span>
+                                                            )}
+                                                            <span>•</span>
+                                                            <span className="text-indigo-600 dark:text-indigo-400 hover:underline">
+                                                                {isExpanded ? "Hide Setup Steps" : "View Setup Steps"}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="shrink-0">
+                                                        <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getPriorityColor(item.priority || "Medium")}`}>
+                                                            {item.priority || "Medium"}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Expanded Step-by-Step Instructions & Code Guide */}
+                                                {isExpanded && (
+                                                    <div className="p-6 bg-slate-50 dark:bg-gray-950 border-t border-gray-155 dark:border-gray-850 space-y-4 text-xs animate-fadeIn">
+                                                        <div>
+                                                            <span className="font-extrabold text-[10px] text-gray-400 uppercase tracking-wide">Objective</span>
+                                                            <p className="mt-1 text-gray-700 dark:text-gray-350 leading-relaxed">{details.objective}</p>
+                                                        </div>
+
+                                                        <div className="space-y-2">
+                                                            <span className="font-extrabold text-[10px] text-gray-400 uppercase tracking-wide">Action Instructions</span>
+                                                            <div className="space-y-2 mt-1">
+                                                                {details.instructions.map((step, idx) => (
+                                                                    <div key={idx} className="flex gap-2.5 items-start">
+                                                                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0 mt-1.5"></span>
+                                                                        <span className="text-gray-650 dark:text-gray-350 leading-relaxed">{step}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex flex-wrap gap-2 pt-1">
+                                                            <span className="font-extrabold text-[10px] text-gray-400 uppercase tracking-wide block w-full">Files to Inspect / Modify</span>
+                                                            {details.files.map((file, idx) => (
+                                                                <span key={idx} className="px-2.5 py-1 bg-white dark:bg-gray-900 border border-gray-250 dark:border-gray-800 rounded-md font-mono text-[10px] text-indigo-650 dark:text-indigo-400">
+                                                                    {file}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+
+                                                        {details.code && (
+                                                            <div>
+                                                                <span className="font-extrabold text-[10px] text-gray-400 uppercase tracking-wide">Command / Code Snippet Guide</span>
+                                                                <pre className="mt-2 p-3 bg-white dark:bg-black border dark:border-gray-850 rounded-xl overflow-x-auto text-[10px] font-mono text-gray-750 dark:text-gray-300 select-all">
+                                                                    {details.code}
+                                                                </pre>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 )}
                                             </div>
-
-                                            <div className="shrink-0">
-                                                <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getPriorityColor(item.priority || "Medium")}`}>
-                                                    {item.priority || "Medium"}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}
@@ -899,32 +1141,97 @@ export default function MeetingDetailPage() {
                                                 <ShieldAlert className="w-4 h-4" />
                                                 Friction Points
                                             </h4>
-                                            <ul className="space-y-2 text-xs text-gray-600 dark:text-gray-300">
-                                                {audit.friction_points && audit.friction_points.map((fric, i) => (
-                                                    <li key={i} className="flex items-start gap-2">
-                                                        <span className="text-rose-500 font-extrabold">•</span>
-                                                        <span>{fric}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
+                                            <div className="space-y-2">
+                                                {audit.friction_points && audit.friction_points.map((fric, i) => {
+                                                    const isExpanded = expandedFrictionIndex === i;
+                                                    const details = getHealthAuditDetails(fric);
+                                                    return (
+                                                        <div key={i} className="border border-rose-100/50 dark:border-rose-900/20 rounded-xl bg-white dark:bg-gray-900 shadow-sm overflow-hidden transition-all">
+                                                            <button
+                                                                onClick={() => setExpandedFrictionIndex(isExpanded ? null : i)}
+                                                                className="w-full p-3 text-left text-xs font-bold text-gray-700 dark:text-gray-200 flex justify-between items-center hover:bg-rose-50/20 cursor-pointer"
+                                                            >
+                                                                <span className="flex items-start gap-2">
+                                                                    <span className="text-rose-500 font-extrabold">•</span>
+                                                                    <span>{fric}</span>
+                                                                </span>
+                                                                <span className="text-[10px] text-gray-400 uppercase">{isExpanded ? "Hide" : "Details"}</span>
+                                                            </button>
+
+                                                            {isExpanded && (
+                                                                <div className="p-3 border-t border-rose-100/30 dark:border-rose-900/20 bg-rose-500/5 dark:bg-rose-950/5 space-y-2 text-xs">
+                                                                    <div>
+                                                                        <span className="font-bold text-rose-600 dark:text-rose-450">Severity:</span> <span className="px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 text-[10px] font-bold">{details.severity}</span>
+                                                                    </div>
+                                                                    <div>
+                                                                        <span className="font-bold text-gray-500">Impact:</span>
+                                                                        <p className="text-gray-650 dark:text-gray-400 leading-relaxed mt-0.5">{details.impact}</p>
+                                                                    </div>
+                                                                    <div>
+                                                                        <span className="font-bold text-gray-500">Context:</span>
+                                                                        <p className="text-gray-650 dark:text-gray-400 leading-relaxed mt-0.5">{details.context}</p>
+                                                                    </div>
+                                                                    {details.template && (
+                                                                        <div>
+                                                                            <span className="font-bold text-gray-500 font-sans">Configuration Template:</span>
+                                                                            <pre className="mt-1.5 p-2 bg-gray-50 dark:bg-black border dark:border-gray-850 rounded-lg text-[10px] font-mono overflow-x-auto select-all text-gray-700 dark:text-gray-300">
+                                                                                {details.template}
+                                                                            </pre>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
                                         </div>
                                     </div>
 
                                     {/* Actionable Recommendations */}
                                     <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-lg space-y-4">
                                         <h4 className="font-bold text-gray-900 dark:text-white text-base">
-                                            Steps to Improve Onboarding Setup
+                                            Steps to Improve Onboarding Setup (Click to Expand Guide)
                                         </h4>
-                                        <ul className="space-y-3 text-sm text-gray-700 dark:text-gray-300">
-                                            {audit.recommendations && audit.recommendations.map((rec, i) => (
-                                                <li key={i} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-xl">
-                                                    <div className="w-6 h-6 rounded-full bg-indigo-500/10 flex items-center justify-center shrink-0">
-                                                        <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">{i + 1}</span>
+                                        <div className="space-y-3">
+                                            {audit.recommendations && audit.recommendations.map((rec, i) => {
+                                                const isExpanded = expandedRecIndex === i;
+                                                const details = getHealthAuditDetails(rec);
+                                                return (
+                                                    <div key={i} className="border border-gray-150 dark:border-gray-750 rounded-xl bg-gray-50 dark:bg-gray-900 shadow-sm overflow-hidden transition-all">
+                                                        <button
+                                                            onClick={() => setExpandedRecIndex(isExpanded ? null : i)}
+                                                            className="w-full p-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-200 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-gray-800/40 cursor-pointer"
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-6 h-6 rounded-full bg-indigo-500/10 flex items-center justify-center shrink-0">
+                                                                    <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">{i + 1}</span>
+                                                                </div>
+                                                                <span className="text-sm font-bold">{rec}</span>
+                                                            </div>
+                                                            <span className="text-[10px] text-gray-400 uppercase font-extrabold">{isExpanded ? "Hide Guide" : "View Guide"}</span>
+                                                        </button>
+
+                                                        {isExpanded && (
+                                                            <div className="p-4 border-t border-gray-200 dark:border-gray-850 bg-white dark:bg-gray-950 space-y-3 text-xs">
+                                                                <div>
+                                                                    <span className="font-bold text-gray-500">Why this improves onboarding:</span>
+                                                                    <p className="text-gray-650 dark:text-gray-400 leading-relaxed mt-0.5">{details.impact}</p>
+                                                                </div>
+                                                                {details.template && (
+                                                                    <div>
+                                                                        <span className="font-bold text-gray-500">Recommended Implementation Boilerplate:</span>
+                                                                        <pre className="mt-2 p-3 bg-gray-50 dark:bg-black border dark:border-gray-850 rounded-xl text-[10px] font-mono overflow-x-auto select-all text-gray-700 dark:text-gray-300">
+                                                                            {details.template}
+                                                                        </pre>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                    <span>{rec}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
+                                                );
+                                            })}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1056,6 +1363,47 @@ export default function MeetingDetailPage() {
                                             )}
                                         </button>
                                     </form>
+
+                                    {/* Quick Test Samples */}
+                                    <div className="pt-4 border-t border-gray-100 dark:border-gray-700 space-y-3">
+                                        <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wide flex items-center gap-1.5">
+                                            <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+                                            Quick Test Samples
+                                        </h4>
+                                        <div className="space-y-2">
+                                            <div className="p-3 bg-slate-50 dark:bg-gray-900 border border-slate-150 dark:border-gray-800 rounded-xl space-y-2 text-xs">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="font-bold text-gray-850 dark:text-gray-200">Google SSO Authentication</span>
+                                                    <button
+                                                        onClick={() => {
+                                                            setTicketTitle("ISSUE-402: Add Google SSO Login");
+                                                            setTicketDesc("Implement Google Single Sign-On (SSO) login flow. Create backend integration endpoints and ensure users are saved to user profile tables in Supabase.");
+                                                        }}
+                                                        className="px-2 py-1 bg-indigo-650 hover:bg-indigo-750 text-white rounded text-[10px] font-bold cursor-pointer transition-all"
+                                                    >
+                                                        Use Sample
+                                                    </button>
+                                                </div>
+                                                <p className="text-gray-500 text-[10px] leading-relaxed">Simulates setting up OAuth credential exchanges for Google authentication.</p>
+                                            </div>
+
+                                            <div className="p-3 bg-slate-50 dark:bg-gray-900 border border-slate-150 dark:border-gray-800 rounded-xl space-y-2 text-xs">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="font-bold text-gray-850 dark:text-gray-200">Fix Auth Session Expiry</span>
+                                                    <button
+                                                        onClick={() => {
+                                                            setTicketTitle("BUG-101: Fix authentication session expiry cookie");
+                                                            setTicketDesc("Authentication sessions are expiring immediately when browser is closed. Update cookies to persist user JWT tokens for 30 days.");
+                                                        }}
+                                                        className="px-2 py-1 bg-indigo-650 hover:bg-indigo-750 text-white rounded text-[10px] font-bold cursor-pointer transition-all"
+                                                    >
+                                                        Use Sample
+                                                    </button>
+                                                </div>
+                                                <p className="text-gray-500 text-[10px] leading-relaxed">Simulates modifying token expirations and session cookies.</p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {/* Right Side: Guidance Results */}
