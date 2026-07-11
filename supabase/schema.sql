@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     username TEXT UNIQUE NOT NULL,
     email TEXT UNIQUE NOT NULL,
     plan TEXT DEFAULT 'free' CHECK (plan IN ('free', 'pro', 'team')),
+    webhook_secret TEXT DEFAULT gen_random_uuid()::text,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -125,10 +126,81 @@ CREATE TRIGGER update_onboardings_updated_at
     EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
--- 9. GRANT PERMISSIONS
+-- 9. CREATE SYNC_LOGS TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS public.sync_logs (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    onboarding_id UUID REFERENCES public.onboardings(id) ON DELETE CASCADE NOT NULL,
+    event TEXT NOT NULL,
+    branch TEXT NOT NULL DEFAULT 'main',
+    commit_hash TEXT,
+    status TEXT NOT NULL CHECK (status IN ('success', 'failed', 'syncing')),
+    details TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_sync_logs_onboarding_id ON public.sync_logs(onboarding_id);
+
+ALTER TABLE public.sync_logs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view sync logs of own onboardings"
+    ON public.sync_logs
+    FOR SELECT
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.onboardings
+            WHERE public.onboardings.id = public.sync_logs.onboarding_id
+              AND public.onboardings.user_id = auth.uid()
+        )
+    );
+
+-- ============================================
+-- 9.5 CREATE CODE_REVIEWS TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS public.code_reviews (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    onboarding_id UUID REFERENCES public.onboardings(id) ON DELETE CASCADE NOT NULL,
+    filename TEXT,
+    code_snippet TEXT NOT NULL,
+    review_feedback JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_code_reviews_onboarding_id ON public.code_reviews(onboarding_id);
+
+ALTER TABLE public.code_reviews ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view reviews of own onboardings"
+    ON public.code_reviews
+    FOR SELECT
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.onboardings
+            WHERE public.onboardings.id = public.code_reviews.onboarding_id
+              AND public.onboardings.user_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Users can insert reviews of own onboardings"
+    ON public.code_reviews
+    FOR INSERT
+    WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM public.onboardings
+            WHERE public.onboardings.id = public.code_reviews.onboarding_id
+              AND public.onboardings.user_id = auth.uid()
+        )
+    );
+
+-- ============================================
+-- 10. GRANT PERMISSIONS
 -- ============================================
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT ALL ON public.profiles TO authenticated;
 GRANT ALL ON public.onboardings TO authenticated;
+GRANT ALL ON public.sync_logs TO authenticated;
+GRANT ALL ON public.code_reviews TO authenticated;
 GRANT SELECT ON public.profiles TO anon;
 GRANT SELECT ON public.onboardings TO anon;
+GRANT SELECT ON public.sync_logs TO anon;
+GRANT SELECT ON public.code_reviews TO anon;

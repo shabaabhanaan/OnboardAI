@@ -240,6 +240,44 @@ export const onboardings = {
         if (error) throw error;
         return data;
     },
+
+    getSyncLogs: async (onboardingId: string) => {
+        const { data, error } = await supabase
+            .from('sync_logs')
+            .select('*')
+            .eq('onboarding_id', onboardingId)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return data;
+    },
+
+    getCodeReviews: async (onboardingId: string) => {
+        const { data, error } = await supabase
+            .from('code_reviews')
+            .select('*')
+            .eq('onboarding_id', onboardingId)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return data;
+    },
+
+    createCodeReview: async (onboardingId: string, filename: string, codeSnippet: string, reviewFeedback: any) => {
+        const { data, error } = await supabase
+            .from('code_reviews')
+            .insert([{
+                onboarding_id: onboardingId,
+                filename,
+                code_snippet: codeSnippet,
+                review_feedback: reviewFeedback
+            }])
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    },
 };
 
 // Keep summaries alias for backwards compatibility during migration

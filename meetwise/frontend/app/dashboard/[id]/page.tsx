@@ -21,9 +21,17 @@ import {
     Settings,
     FileCode2,
     ShieldAlert,
-    TrendingUp
+    TrendingUp,
+    GitPullRequest,
+    Code2,
+    History,
+    Globe,
+    RefreshCw,
+    Terminal,
+    ArrowRight,
+    Info
 } from "lucide-react";
-import { summaries } from "@/lib/api";
+import { onboardings } from "@/lib/api";
 import { useAuth } from "@/components/auth-provider";
 
 interface Summary {
@@ -43,6 +51,23 @@ interface Summary {
     created_at: string;
 }
 
+interface SyncLog {
+    id: string;
+    event: string;
+    branch: string;
+    commit_hash: string;
+    status: string;
+    details: string;
+    created_at: string;
+}
+
+interface TicketGuidance {
+    files_to_modify: Array<{ path: string; reason: string }>;
+    relevant_components_or_functions: string;
+    implementation_steps: string[];
+    difficulty_rating: string;
+}
+
 export default function MeetingDetailPage() {
     const params = useParams();
     const router = useRouter();
@@ -54,15 +79,42 @@ export default function MeetingDetailPage() {
     const [deleting, setDeleting] = useState(false);
     
     // Feature States
-    const [activeTab, setActiveTab] = useState<"overview" | "files" | "plan" | "health" | "chat">("overview");
+    const [activeTab, setActiveTab] = useState<"overview" | "files" | "plan" | "health" | "chat" | "tickets" | "sync" | "reviews">("overview");
     const [updatingTasks, setUpdatingTasks] = useState(false);
     
+    // Graph Explorer States
+    const [selectedNode, setSelectedNode] = useState<string | null>(null);
+
     // Chat States
     const [chatInput, setChatInput] = useState("");
     const [chatMessages, setChatMessages] = useState<Array<{ sender: "user" | "ai"; text: string }>>([
         { sender: "ai", text: "Hello! I am your AI Onboarding Assistant. Ask me anything about this codebase, architecture, setup steps, or where specific files are located." }
     ]);
     const [chatLoading, setChatLoading] = useState(false);
+
+    // Ticket Guidance States
+    const [ticketTitle, setTicketTitle] = useState("");
+    const [ticketDesc, setTicketDesc] = useState("");
+    const [ticketGuidance, setTicketGuidance] = useState<TicketGuidance | null>(null);
+    const [ticketLoading, setTicketLoading] = useState(false);
+
+    // Webhooks & Sync States
+    const [syncLogs, setSyncLogs] = useState<SyncLog[]>([]);
+    const [syncLoading, setSyncLoading] = useState(false);
+    const [webhookUrl, setWebhookUrl] = useState("");
+
+    // Code Review States
+    const [reviewSnippet, setReviewSnippet] = useState("");
+    const [reviewFilename, setReviewFilename] = useState("");
+    const [codeReviews, setCodeReviews] = useState<Array<{ id: string; filename: string; code_snippet: string; review_feedback: any; created_at: string }>>([]);
+    const [reviewLoading, setReviewLoading] = useState(false);
+    const [reviewsLoadingHistory, setReviewsLoadingHistory] = useState(false);
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            setWebhookUrl(`${window.location.origin}/api/webhooks/github`);
+        }
+    }, []);
 
     useEffect(() => {
         if (!authLoading) {
@@ -74,14 +126,85 @@ export default function MeetingDetailPage() {
         }
     }, [params.id, router, user, authLoading]);
 
+    useEffect(() => {
+        if (activeTab === "sync" && summary) {
+            loadSyncLogs();
+        }
+    }, [activeTab, summary]);
+
+    useEffect(() => {
+        if (activeTab === "reviews" && summary) {
+            loadCodeReviews();
+        }
+    }, [activeTab, summary]);
+
     const loadSummary = async () => {
         try {
-            const data = await summaries.get(params.id as string);
+            const data = await onboardings.get(params.id as string);
             setSummary(data);
         } catch (err: any) {
-            setError(err.message || "Failed to load summary");
+            setError(err.message || "Failed to load onboarding");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadSyncLogs = async () => {
+        if (!summary) return;
+        setSyncLoading(true);
+        try {
+            const data = await onboardings.getSyncLogs(summary.id);
+            setSyncLogs(data);
+        } catch (err) {
+            console.error("Failed to load sync logs:", err);
+        } finally {
+            setSyncLoading(false);
+        }
+    };
+
+    const loadCodeReviews = async () => {
+        if (!summary) return;
+        setReviewsLoadingHistory(true);
+        try {
+            const data = await onboardings.getCodeReviews(summary.id);
+            setCodeReviews(data);
+        } catch (err) {
+            console.error("Failed to load code reviews:", err);
+        } finally {
+            setReviewsLoadingHistory(false);
+        }
+    };
+
+    const handleRequestReview = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!reviewSnippet.trim() || !summary || reviewLoading) return;
+
+        setReviewLoading(true);
+        try {
+            const response = await fetch("/api/reviews/request", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    codeSnippet: reviewSnippet,
+                    filename: reviewFilename || "unnamed_file.ts",
+                    context: summary.notes
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || "Failed to analyze code snippet");
+
+            // Save review feedback to database
+            await onboardings.createCodeReview(summary.id, reviewFilename || "unnamed_file.ts", reviewSnippet, data);
+            
+            // Reset input and reload history
+            setReviewSnippet("");
+            setReviewFilename("");
+            await loadCodeReviews();
+        } catch (err: any) {
+            alert(`Error: ${err.message}`);
+        } finally {
+            setReviewLoading(false);
         }
     };
 
@@ -92,7 +215,7 @@ export default function MeetingDetailPage() {
 
         setDeleting(true);
         try {
-            await summaries.delete(params.id as string);
+            await onboardings.delete(params.id as string);
             router.push("/dashboard");
         } catch (err: any) {
             setError(err.message || "Failed to delete summary");
@@ -112,7 +235,7 @@ export default function MeetingDetailPage() {
         });
 
         try {
-            await summaries.updateActionItems(summary.id, updatedActionItems);
+            await onboardings.updateActionItems(summary.id, updatedActionItems);
             setSummary({
                 ...summary,
                 action_items: updatedActionItems
@@ -140,7 +263,7 @@ export default function MeetingDetailPage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     message: userMsg,
-                    history: chatMessages.slice(1), // omit the initial welcome message from history representation
+                    history: chatMessages.slice(1), 
                     context: summary.notes
                 })
             });
@@ -155,6 +278,68 @@ export default function MeetingDetailPage() {
             setChatMessages(prev => [...prev, { sender: "ai", text: `Sorry, I encountered an error: ${err.message}` }]);
         } finally {
             setChatLoading(false);
+        }
+    };
+
+    const handleGetTicketGuidance = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!ticketTitle.trim() || !summary || ticketLoading) return;
+
+        setTicketLoading(true);
+        try {
+            const response = await fetch("/api/tickets/guidance", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    ticketTitle,
+                    ticketDescription: ticketDesc,
+                    context: summary.notes
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || "Failed to analyze ticket");
+
+            setTicketGuidance(data);
+        } catch (err: any) {
+            alert(`Error: ${err.message}`);
+        } finally {
+            setTicketLoading(false);
+        }
+    };
+
+    const handleSimulatePush = async () => {
+        if (!summary) return;
+        try {
+            const response = await fetch("/api/webhooks/github", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    ref: "refs/heads/main",
+                    commits: [
+                        {
+                            id: Math.random().toString(36).substring(2, 9),
+                            message: "Refactored user authentication endpoints and optimized DB queries",
+                            timestamp: new Date().toISOString(),
+                            author: { name: user?.username || "Developer" }
+                        }
+                    ],
+                    repository: {
+                        html_url: `https://github.com/developer/${summary.title.toLowerCase()}`
+                    },
+                    head_commit: {
+                        id: Math.random().toString(36).substring(2, 9),
+                        message: "Refactored user authentication endpoints and optimized DB queries",
+                        author: { name: user?.username || "Developer" }
+                    }
+                })
+            });
+
+            if (response.ok) {
+                await loadSyncLogs();
+            }
+        } catch (err) {
+            console.error("Failed to simulate push:", err);
         }
     };
 
@@ -210,37 +395,69 @@ export default function MeetingDetailPage() {
         recommendations: ["Create a detailed setup checklist in README.md"]
     };
 
-    // Simple parser for flowchart syntax to render components visual map
     const parseMermaidNodes = (graphText: string) => {
         if (!graphText) return { nodes: [], connections: [] };
         const lines = graphText.split("\n");
         const connections: Array<{ from: string; to: string }> = [];
-        const nodeNames = new Set<string>();
+        const labelMap: Record<string, string> = {};
+        const nodeIds = new Set<string>();
 
+        // First pass: extract labels if defined like: A[Frontend] or B("API") or A --> B
         lines.forEach(line => {
-            if (line.includes("-->")) {
-                const parts = line.split("-->");
-                if (parts.length === 2) {
-                    const from = parts[0].replace(/graph\s+(TD|LR|TB|BT);?/, "").replace(/[\[\{\(].*?[\]\}\)]/g, "").trim();
-                    const to = parts[1].replace(/[\[\{\(].*?[\]\}\)]/g, "").trim();
-                    if (from && to) {
-                        connections.push({ from, to });
-                        nodeNames.add(from);
-                        nodeNames.add(to);
+            let cleanLine = line.replace(/graph\s+(TD|LR|TB|BT);?/, "").trim();
+            if (!cleanLine || cleanLine.startsWith("%%")) return;
+
+            const nodeRegex = /([A-Za-z0-9_-]+)(?:\[(.*?)\]|\((.*?)\)|\{(.*?)\})/g;
+            let match;
+            while ((match = nodeRegex.exec(cleanLine)) !== null) {
+                const id = match[1];
+                const label = match[2] || match[3] || match[4] || id;
+                labelMap[id] = label;
+            }
+
+            // Extract connections
+            if (cleanLine.includes("-->")) {
+                const parts = cleanLine.split("-->");
+                for (let i = 0; i < parts.length - 1; i++) {
+                    const fromRaw = parts[i].trim();
+                    const toRaw = parts[i+1].trim();
+
+                    const fromId = fromRaw.split(/[\[\({]/)[0].trim();
+                    const toId = toRaw.split(/[\[\({]/)[0].trim();
+
+                    if (fromId && toId) {
+                        connections.push({ from: fromId, to: toId });
+                        nodeIds.add(fromId);
+                        nodeIds.add(toId);
                     }
                 }
             }
         });
 
-        return { nodes: Array.from(nodeNames), connections };
+        // Map IDs to display names
+        const nodes = Array.from(nodeIds).map(id => labelMap[id] || id);
+        const mappedConnections = connections.map(c => ({
+            from: labelMap[c.from] || c.from,
+            to: labelMap[c.to] || c.to
+        }));
+
+        return { nodes, connections: mappedConnections };
     };
 
     const graphData = parseMermaidNodes(summary.dependency_graph || "");
 
+    // Mock details for selected node
+    const getNodeMetadata = (node: string) => {
+        const desc = `Key folder or architectural layer responsible for core routines associated with ${node}.`;
+        const upstream = graphData.connections.filter(c => c.to === node).map(c => c.from);
+        const downstream = graphData.connections.filter(c => c.from === node).map(c => c.to);
+        return { desc, upstream, downstream };
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-black dark:to-indigo-950 transition-colors duration-300">
             {/* Navbar */}
-            <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm sticky top-0 z-55">
+            <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm sticky top-0 z-50">
                 <div className="container mx-auto px-6 py-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -332,10 +549,13 @@ export default function MeetingDetailPage() {
                     <div className="flex overflow-x-auto gap-2 p-1 bg-white/70 dark:bg-gray-850/50 backdrop-blur-md rounded-2xl border border-gray-200 dark:border-gray-750 shadow-sm max-w-fit">
                         {[
                             { id: "overview", label: "Architecture", icon: Brain },
-                            { id: "files", label: "Files & Visual Map", icon: FileCode2 },
+                            { id: "files", label: "Visual Graph", icon: FileCode2 },
                             { id: "plan", label: "Learning Plan", icon: CheckSquare },
                             { id: "health", label: "Health Audit", icon: Activity },
-                            { id: "chat", label: "AI Assistant Q&A", icon: MessageSquare }
+                            { id: "chat", label: "AI Q&A", icon: MessageSquare },
+                            { id: "tickets", label: "First Ticket Guide", icon: Terminal },
+                            { id: "reviews", label: "Code Reviews", icon: Code2 },
+                            { id: "sync", label: "GitHub Webhook & Sync", icon: GitPullRequest }
                         ].map(tab => {
                             const Icon = tab.icon;
                             const isActive = activeTab === tab.id;
@@ -343,7 +563,7 @@ export default function MeetingDetailPage() {
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id as any)}
-                                    className={`flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm transition-all duration-300 cursor-pointer ${
+                                    className={`flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm transition-all duration-300 cursor-pointer shrink-0 ${
                                         isActive
                                             ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md hover:scale-102"
                                             : "text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-800/40"
@@ -408,56 +628,129 @@ export default function MeetingDetailPage() {
                                 </div>
 
                                 {/* Right Side: Visual Graph Representation */}
-                                <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 border border-gray-200 dark:border-gray-700 shadow-xl flex flex-col justify-between">
-                                    <div>
-                                        <div className="flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 pb-4 mb-6">
-                                            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                                                <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                                            </div>
-                                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                                Module Interconnections
-                                            </h3>
+                                <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 border border-gray-200 dark:border-gray-700 shadow-xl space-y-6">
+                                    <div className="flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 pb-4">
+                                        <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                                            <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                                         </div>
+                                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                            Interactive Module Map Explorer
+                                        </h3>
+                                    </div>
 
-                                        {graphData.nodes.length > 0 ? (
-                                            <div className="p-6 bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-150 dark:border-gray-800 min-h-64 flex flex-col items-center justify-center gap-6">
-                                                <div className="flex flex-wrap justify-center gap-4">
-                                                    {graphData.nodes.map((node, i) => (
-                                                        <div 
+                                    {graphData.nodes.length > 0 ? (
+                                        <div className="space-y-6">
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                Click on any module node below to inspect imports, connections, and flow directions.
+                                            </p>
+                                            
+                                            {/* Visual Nodes Grid */}
+                                            <div className="flex flex-wrap justify-center gap-3 p-6 bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-150 dark:border-gray-850">
+                                                {graphData.nodes.map((node, i) => {
+                                                    const isSelected = selectedNode === node;
+                                                    return (
+                                                        <button 
                                                             key={i} 
-                                                            className="px-5 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold text-sm shadow-md hover:scale-105 transition-transform"
+                                                            onClick={() => setSelectedNode(node)}
+                                                            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all hover:scale-105 cursor-pointer ${
+                                                                isSelected
+                                                                    ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg"
+                                                                    : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
+                                                            }`}
                                                         >
                                                             {node}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                                <div className="w-full text-center pt-4 border-t border-gray-200 dark:border-gray-700">
-                                                    <h4 className="font-bold text-gray-700 dark:text-gray-300 text-sm mb-2">
-                                                        Dependency Link Flow
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+
+                                            {/* Visual Flow diagram */}
+                                            {graphData.connections.length > 0 && (
+                                                <div className="flex flex-col gap-4 p-5 bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-150 dark:border-gray-850">
+                                                    <h4 className="font-extrabold text-[10px] text-gray-400 uppercase tracking-wider">
+                                                        Dependency Link Flow Map
                                                     </h4>
-                                                    <div className="space-y-1 text-xs text-gray-500 dark:text-gray-400">
+                                                    <div className="flex flex-col gap-3">
                                                         {graphData.connections.map((c, idx) => (
-                                                            <div key={idx} className="flex justify-center items-center gap-2">
-                                                                <span className="font-medium text-gray-700 dark:text-gray-300">{c.from}</span>
-                                                                <span>➔</span>
-                                                                <span className="font-medium text-gray-700 dark:text-gray-300">{c.to}</span>
+                                                            <div key={idx} className="flex items-center gap-4 bg-white dark:bg-gray-850 p-3.5 rounded-xl border border-gray-150 dark:border-gray-750 shadow-sm hover:border-indigo-500 transition-colors">
+                                                                <div className="px-3.5 py-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-extrabold rounded-lg text-xs">
+                                                                    {c.from}
+                                                                </div>
+                                                                <div className="flex-1 flex items-center justify-center relative">
+                                                                    <div className="w-full border-t-2 border-dashed border-gray-300 dark:border-gray-700"></div>
+                                                                    <span className="absolute bg-gray-50 dark:bg-gray-900 px-2 text-[9px] text-gray-400 font-extrabold uppercase tracking-wider">
+                                                                        imports
+                                                                    </span>
+                                                                    <ArrowRight className="w-4 h-4 text-indigo-500 absolute right-0" />
+                                                                </div>
+                                                                <div className="px-3.5 py-2 bg-purple-500/10 text-purple-600 dark:text-purple-400 font-extrabold rounded-lg text-xs">
+                                                                    {c.to}
+                                                                </div>
                                                             </div>
                                                         ))}
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ) : (
-                                            <div className="p-12 text-center text-gray-400 dark:text-gray-500">
-                                                <FileCode2 className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                                                <p className="text-sm">Mermaid diagram is rendering as custom modules below or is unavailable.</p>
-                                                {summary.dependency_graph && (
-                                                    <pre className="mt-4 p-4 text-xs font-mono text-left bg-gray-50 dark:bg-gray-900 border dark:border-gray-850 rounded-xl overflow-x-auto text-gray-600 dark:text-gray-400">
-                                                        {summary.dependency_graph}
-                                                    </pre>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
+                                            )}
+
+                                            {/* Node Details Inspector */}
+                                            {selectedNode && (
+                                                <div className="p-5 bg-indigo-50/30 dark:bg-indigo-950/10 border border-indigo-100 dark:border-indigo-900/40 rounded-2xl space-y-4 animate-fadeIn">
+                                                    <div className="flex justify-between items-center">
+                                                        <h4 className="font-extrabold text-sm text-indigo-700 dark:text-indigo-400">
+                                                            🔍 Node: {selectedNode}
+                                                        </h4>
+                                                        <button 
+                                                            onClick={() => setSelectedNode(null)}
+                                                            className="text-xs text-gray-400 hover:text-gray-600"
+                                                        >
+                                                            Clear
+                                                        </button>
+                                                    </div>
+                                                    
+                                                    <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                                                        {getNodeMetadata(selectedNode).desc}
+                                                    </p>
+
+                                                    <div className="grid grid-cols-2 gap-4 text-xs pt-2 border-t border-indigo-100/45 dark:border-indigo-900/30">
+                                                        <div>
+                                                            <span className="font-bold text-gray-500">Upstream (Imports):</span>
+                                                            <div className="mt-1 space-y-1">
+                                                                {getNodeMetadata(selectedNode).upstream.length > 0 ? (
+                                                                    getNodeMetadata(selectedNode).upstream.map((u, k) => (
+                                                                        <div key={k} className="text-gray-700 dark:text-gray-300">• {u}</div>
+                                                                    ))
+                                                                ) : (
+                                                                    <div className="text-gray-400 italic">None</div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <span className="font-bold text-gray-500">Downstream (Imported By):</span>
+                                                            <div className="mt-1 space-y-1">
+                                                                {getNodeMetadata(selectedNode).downstream.length > 0 ? (
+                                                                    getNodeMetadata(selectedNode).downstream.map((d, k) => (
+                                                                        <div key={k} className="text-gray-700 dark:text-gray-300">• {d}</div>
+                                                                    ))
+                                                                ) : (
+                                                                    <div className="text-gray-400 italic">None</div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="p-12 text-center text-gray-400 dark:text-gray-500">
+                                            <FileCode2 className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                                            <p className="text-sm">Mermaid diagram flow represents module configurations.</p>
+                                            {summary.dependency_graph && (
+                                                <pre className="mt-4 p-4 text-xs font-mono text-left bg-gray-50 dark:bg-gray-900 border dark:border-gray-850 rounded-xl overflow-x-auto text-gray-600 dark:text-gray-400">
+                                                    {summary.dependency_graph}
+                                                </pre>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -659,6 +952,413 @@ export default function MeetingDetailPage() {
                                         <Send className="w-5 h-5" />
                                     </button>
                                 </form>
+                            </div>
+                        )}
+
+                        {/* Tab 6: First Ticket Guidance */}
+                        {activeTab === "tickets" && (
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fadeIn">
+                                {/* Left Side: Ticket Input Form */}
+                                <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 border border-gray-200 dark:border-gray-700 shadow-xl space-y-6">
+                                    <div className="flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 pb-4">
+                                        <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                                            <Terminal className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                                        </div>
+                                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                            Task / Issue Inputs
+                                        </h3>
+                                    </div>
+                                    
+                                    <form onSubmit={handleGetTicketGuidance} className="space-y-4">
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                                                Ticket Title / ID
+                                            </label>
+                                            <input 
+                                                type="text"
+                                                value={ticketTitle}
+                                                onChange={(e) => setTicketTitle(e.target.value)}
+                                                placeholder="e.g. ISSUE-402: Add Google SSO"
+                                                required
+                                                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                                                Ticket Description / Requirements
+                                            </label>
+                                            <textarea 
+                                                value={ticketDesc}
+                                                onChange={(e) => setTicketDesc(e.target.value)}
+                                                placeholder="Paste requirements, expected changes, or Jira issue details here..."
+                                                rows={5}
+                                                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm"
+                                            />
+                                        </div>
+
+                                        <button
+                                            type="submit"
+                                            disabled={ticketLoading}
+                                            className="w-full py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-bold text-sm hover:shadow-lg hover:scale-102 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                                        >
+                                            {ticketLoading ? (
+                                                <>
+                                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                                    Locating files...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Sparkles className="w-5 h-5" />
+                                                    Locate Code Elements
+                                                </>
+                                            )}
+                                        </button>
+                                    </form>
+                                </div>
+
+                                {/* Right Side: Guidance Results */}
+                                <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-3xl p-8 border border-gray-200 dark:border-gray-700 shadow-xl min-h-96">
+                                    {ticketGuidance ? (
+                                        <div className="space-y-6 animate-fadeIn">
+                                            <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-4">
+                                                <h4 className="font-extrabold text-gray-900 dark:text-white text-lg">
+                                                    AI Code Locator Recommendations
+                                                </h4>
+                                                <span className="px-3 py-1 rounded-full text-xs font-bold bg-purple-50 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-900">
+                                                    Difficulty: {ticketGuidance.difficulty_rating}
+                                                </span>
+                                            </div>
+
+                                            {/* Code segments to modify */}
+                                            <div className="space-y-3">
+                                                <h5 className="font-bold text-gray-800 dark:text-gray-200 text-sm flex items-center gap-2">
+                                                    <FileCode2 className="w-4 h-4 text-indigo-500" />
+                                                    Suggested Files to Edit
+                                                </h5>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    {ticketGuidance.files_to_modify.map((file, i) => (
+                                                        <div key={i} className="p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl flex flex-col gap-1.5">
+                                                            <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400 truncate">
+                                                                {file.path}
+                                                            </span>
+                                                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                {file.reason}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {/* Important Context */}
+                                            <div className="p-4 bg-indigo-50/20 dark:bg-indigo-950/15 border border-indigo-100 dark:border-indigo-900/40 rounded-2xl text-xs space-y-1">
+                                                <div className="font-bold text-indigo-700 dark:text-indigo-400 flex items-center gap-2">
+                                                    <Info className="w-4 h-4" />
+                                                    Relevant Libraries & Functions
+                                                </div>
+                                                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                                                    {ticketGuidance.relevant_components_or_functions}
+                                                </p>
+                                            </div>
+
+                                            {/* Step by step implementation */}
+                                            <div className="space-y-3">
+                                                <h5 className="font-bold text-gray-800 dark:text-gray-200 text-sm flex items-center gap-2">
+                                                    <Terminal className="w-4 h-4 text-purple-500" />
+                                                    Step-By-Step Implementation Action Plan
+                                                </h5>
+                                                <div className="space-y-2">
+                                                    {ticketGuidance.implementation_steps.map((step, idx) => (
+                                                        <div key={idx} className="flex gap-3 text-xs p-3 bg-gray-50 dark:bg-gray-900 rounded-xl items-start">
+                                                            <span className="font-extrabold text-purple-600">{idx + 1}.</span>
+                                                            <span className="text-gray-700 dark:text-gray-300">{step}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="h-full flex flex-col justify-center items-center text-center p-12">
+                                            <Terminal className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-4 animate-pulse" />
+                                            <h4 className="font-bold text-gray-700 dark:text-gray-300 mb-2">
+                                                No Guidance Generated Yet
+                                            </h4>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm">
+                                                Paste a GitHub issue details description on the left and submit to locate code nodes and files automatically.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Tab 7: GitHub Webhooks & Sync settings */}
+                        {activeTab === "sync" && (
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fadeIn">
+                                {/* Left Side: Webhook Config instructions */}
+                                <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 border border-gray-200 dark:border-gray-700 shadow-xl space-y-6">
+                                    <div className="flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 pb-4">
+                                        <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
+                                            <Globe className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                                        </div>
+                                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                            Webhook Settings
+                                        </h3>
+                                    </div>
+
+                                    <div className="space-y-4 text-sm text-gray-600 dark:text-gray-400">
+                                        <p>
+                                            Configure a GitHub Webhook to automatically keep your AI onboarding workspace context updated whenever commits are pushed.
+                                        </p>
+
+                                        <div className="space-y-2">
+                                            <span className="font-bold text-gray-700 dark:text-gray-300 text-xs">Webhook Payload URL</span>
+                                            <div className="p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl font-mono text-xs select-all text-indigo-600 dark:text-indigo-400 truncate">
+                                                {webhookUrl}
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <span className="font-bold text-gray-700 dark:text-gray-300 text-xs">Secret</span>
+                                            <div className="p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl font-mono text-xs select-all text-gray-600 dark:text-gray-400">
+                                                {user?.webhook_secret || "43e20ab7-e2c7-4318-8aef-132d0ff841b2"}
+                                            </div>
+                                        </div>
+
+                                        <div className="p-4 bg-indigo-50/20 dark:bg-indigo-950/15 border border-indigo-100 dark:border-indigo-900/40 rounded-2xl text-xs leading-relaxed space-y-1">
+                                            <span className="font-bold text-indigo-700 dark:text-indigo-400 flex items-center gap-1.5">
+                                                <Info className="w-4 h-4" />
+                                                Setup Instructions
+                                            </span>
+                                            <p>1. Go to your GitHub repository Settings &gt; Webhooks &gt; Add webhook.</p>
+                                            <p>2. Paste the Payload URL above, select Content type as <code>application/json</code>, and paste the Secret.</p>
+                                            <p>3. Select <code>Just the push event</code> and click Add webhook.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Right Side: Sync Logs Console */}
+                                <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-3xl p-8 border border-gray-200 dark:border-gray-700 shadow-xl flex flex-col justify-between min-h-96">
+                                    <div className="space-y-6">
+                                        <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                                                    <History className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                                                </div>
+                                                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                                    Sync Event Log Console
+                                                </h3>
+                                            </div>
+
+                                            <div className="flex items-center gap-3">
+                                                <button
+                                                    onClick={handleSimulatePush}
+                                                    className="px-4 py-2 border border-gray-300 dark:border-gray-700 hover:border-indigo-500 text-xs font-bold rounded-lg cursor-pointer flex items-center gap-1.5"
+                                                >
+                                                    <Play className="w-3.5 h-3.5" />
+                                                    Simulate Push Event
+                                                </button>
+                                                <button 
+                                                    onClick={loadSyncLogs}
+                                                    className="p-2 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer"
+                                                >
+                                                    <RefreshCw className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {syncLoading ? (
+                                            <div className="flex justify-center items-center py-20">
+                                                <Loader2 className="w-8 h-8 text-indigo-650 animate-spin" />
+                                            </div>
+                                        ) : syncLogs.length > 0 ? (
+                                            <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2">
+                                                {syncLogs.map((log) => (
+                                                    <div 
+                                                        key={log.id} 
+                                                        className="p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl text-xs space-y-2"
+                                                    >
+                                                        <div className="flex justify-between items-center">
+                                                            <span className="font-extrabold text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                                {log.event}
+                                                            </span>
+                                                            <span className="text-gray-400 text-xs">
+                                                                {new Date(log.created_at).toLocaleTimeString()}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex gap-4 font-mono text-[11px] text-gray-500">
+                                                            <span>Branch: {log.branch}</span>
+                                                            <span>Commit: <span className="text-indigo-600 dark:text-indigo-400">{log.commit_hash}</span></span>
+                                                        </div>
+                                                        <p className="text-gray-650 dark:text-gray-350 leading-relaxed font-sans">
+                                                            {log.details}
+                                                        </p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="py-20 text-center text-gray-400 dark:text-gray-500 flex flex-col justify-center items-center">
+                                                <GitPullRequest className="w-10 h-10 mb-3 opacity-50" />
+                                                <p className="text-sm">No webhook triggers or synchronization logs recorded yet.</p>
+                                                <p className="text-xs mt-1 text-gray-500">Push to main or click Simulate Push Event above to test.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        {activeTab === "reviews" && (
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fadeIn">
+                                {/* Left: Snippet Form */}
+                                <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 border border-gray-200 dark:border-gray-700 shadow-xl space-y-6">
+                                    <div className="flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 pb-4">
+                                        <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                                            <Code2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                                        </div>
+                                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                            Request Code Review
+                                        </h3>
+                                    </div>
+
+                                    <form onSubmit={handleRequestReview} className="space-y-4">
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                                                Filename / Module Path
+                                            </label>
+                                            <input 
+                                                type="text"
+                                                value={reviewFilename}
+                                                onChange={(e) => setReviewFilename(e.target.value)}
+                                                placeholder="e.g. app/api/auth/route.ts"
+                                                required
+                                                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                                                Code Snippet
+                                            </label>
+                                            <textarea 
+                                                value={reviewSnippet}
+                                                onChange={(e) => setReviewSnippet(e.target.value)}
+                                                placeholder="Paste the code you want reviewed against the codebase context..."
+                                                rows={8}
+                                                required
+                                                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-mono text-xs"
+                                            />
+                                        </div>
+
+                                        <button
+                                            type="submit"
+                                            disabled={reviewLoading}
+                                            className="w-full py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-bold text-sm hover:shadow-lg hover:scale-102 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                                        >
+                                            {reviewLoading ? (
+                                                <>
+                                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                                    Analyzing code...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Sparkles className="w-5 h-5" />
+                                                    Submit Code Review
+                                                </>
+                                            )}
+                                        </button>
+                                    </form>
+                                </div>
+
+                                {/* Right: Reviews History & Results */}
+                                <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-3xl p-8 border border-gray-200 dark:border-gray-700 shadow-xl flex flex-col justify-between min-h-96">
+                                    <div className="space-y-6">
+                                        <div className="border-b border-gray-100 dark:border-gray-700 pb-4">
+                                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                                Code Review History
+                                            </h3>
+                                        </div>
+
+                                        {reviewsLoadingHistory ? (
+                                            <div className="flex justify-center items-center py-20">
+                                                <Loader2 className="w-8 h-8 text-indigo-650 animate-spin" />
+                                            </div>
+                                        ) : codeReviews.length > 0 ? (
+                                            <div className="space-y-6 max-h-[500px] overflow-y-auto pr-2">
+                                                {codeReviews.map((rev) => (
+                                                    <div 
+                                                        key={rev.id} 
+                                                        className="p-5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl space-y-4"
+                                                    >
+                                                        <div className="flex justify-between items-center border-b border-gray-150 dark:border-gray-850 pb-2">
+                                                            <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                                                                📄 {rev.filename}
+                                                            </span>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-[10px] text-gray-400">
+                                                                    {new Date(rev.created_at).toLocaleDateString()}
+                                                                </span>
+                                                                <span className="px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border border-emerald-250 text-xs font-bold">
+                                                                    Score: {rev.review_feedback?.score || "N/A"}/10
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Snippet preview */}
+                                                        <details className="text-xs">
+                                                            <summary className="cursor-pointer font-bold text-gray-500 hover:text-gray-700">View code snippet</summary>
+                                                            <pre className="mt-2 p-3 bg-white dark:bg-black border dark:border-gray-850 rounded-xl overflow-x-auto text-[11px] font-mono">
+                                                                {rev.code_snippet}
+                                                            </pre>
+                                                        </details>
+
+                                                        {/* Audit Feedback */}
+                                                        <div className="space-y-3 text-xs">
+                                                            <div>
+                                                                <span className="font-bold text-indigo-600 dark:text-indigo-400">Compliance Statement:</span>
+                                                                <p className="mt-1 text-gray-700 dark:text-gray-300">{rev.review_feedback?.styling_and_architecture_compliance}</p>
+                                                            </div>
+
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                                <div className="p-3 bg-emerald-500/5 border border-emerald-200 dark:border-emerald-800 rounded-xl">
+                                                                    <span className="font-bold text-emerald-600 dark:text-emerald-400">Positives:</span>
+                                                                    <ul className="mt-1.5 space-y-1 list-disc list-inside">
+                                                                        {rev.review_feedback?.positives?.map((pos: string, idx: number) => (
+                                                                            <li key={idx} className="text-gray-600 dark:text-gray-400">{pos}</li>
+                                                                        ))}
+                                                                    </ul>
+                                                                </div>
+                                                                <div className="p-3 bg-rose-500/5 border border-rose-200 dark:border-rose-800 rounded-xl">
+                                                                    <span className="font-bold text-rose-600 dark:text-rose-400">Issues:</span>
+                                                                    <ul className="mt-1.5 space-y-1 list-disc list-inside">
+                                                                        {rev.review_feedback?.issues?.map((iss: string, idx: number) => (
+                                                                            <li key={idx} className="text-gray-600 dark:text-gray-400">{iss}</li>
+                                                                        ))}
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+
+                                                            {rev.review_feedback?.refactored_suggestion && (
+                                                                <div>
+                                                                    <span className="font-bold text-purple-600 dark:text-purple-400">Refactoring Recommendation:</span>
+                                                                    <pre className="mt-2 p-3 bg-white dark:bg-black border dark:border-gray-850 rounded-xl overflow-x-auto text-[11px] font-mono text-gray-750 dark:text-gray-300">
+                                                                        {rev.review_feedback.refactored_suggestion}
+                                                                    </pre>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="py-20 text-center text-gray-400 dark:text-gray-500 flex flex-col justify-center items-center">
+                                                <Code2 className="w-10 h-10 mb-3 opacity-50" />
+                                                <p className="text-sm">No code reviews requested yet.</p>
+                                                <p className="text-xs mt-1 text-gray-500">Paste a code snippet on the left to get architect reviews.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </div>
