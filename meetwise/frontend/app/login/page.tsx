@@ -36,7 +36,7 @@ export default function LoginPage() {
         <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-black dark:to-indigo-950 flex flex-col justify-center items-center px-6 py-24 relative overflow-hidden">
             
             {/* Top Navigation Bar Header */}
-            <header className="absolute top-0 left-0 right-0 z-50 bg-white/60 dark:bg-gray-950/60 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 px-6 py-4">
+            <header className="fixed top-0 left-0 right-0 z-50 bg-white/60 dark:bg-gray-950/60 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 px-6 py-4">
                 <div className="max-w-6xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <Logo />
@@ -45,7 +45,7 @@ export default function LoginPage() {
                         <Link href="/" className="hover:text-indigo-655 transition-colors">Home</Link>
                         <Link href="/dashboard" className="hover:text-indigo-655 transition-colors">Features</Link>
                         <Link href="/pricing" className="hover:text-indigo-655 transition-colors">Pricing</Link>
-                        <Link href="/pricing" className="hover:text-indigo-655 transition-colors">Contact</Link>
+                        <Link href="/#contact" className="hover:text-indigo-655 transition-colors">Contact</Link>
                     </nav>
                     <div className="flex items-center gap-3">
                         <Link href="/register" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-750 text-white text-xs font-extrabold rounded-xl transition-all shadow-md">

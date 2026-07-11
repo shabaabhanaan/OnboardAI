@@ -56,7 +56,7 @@ export default function Home() {
     <div className="relative min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-black dark:to-indigo-950 transition-colors duration-300 overflow-hidden">
       
       {/* Top Navigation Bar Header */}
-      <header className="absolute top-0 left-0 right-0 z-50 bg-white/60 dark:bg-gray-950/60 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 px-6 py-4">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/60 dark:bg-gray-950/60 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 px-6 py-4">
           <div className="max-w-6xl mx-auto flex items-center justify-between">
               <div className="flex items-center gap-2">
                   <Logo />
@@ -65,7 +65,7 @@ export default function Home() {
                   <Link href="/" className="hover:text-indigo-655 transition-colors">Home</Link>
                   <Link href="/dashboard" className="hover:text-indigo-655 transition-colors">Features</Link>
                   <Link href="/pricing" className="hover:text-indigo-655 transition-colors">Pricing</Link>
-                  <Link href="/pricing" className="hover:text-indigo-655 transition-colors">Contact</Link>
+                  <Link href="#contact" className="hover:text-indigo-655 transition-colors">Contact</Link>
               </nav>
               <div className="flex items-center gap-3">
                   <Link href="/register" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-750 text-white text-xs font-extrabold rounded-xl transition-all shadow-md">
@@ -213,6 +213,78 @@ export default function Home() {
                   </p>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Contact Section */}
+          <div id="contact" className="mt-28 mb-16 scroll-mt-24 text-left max-w-4xl mx-auto">
+            <div className="text-center space-y-4 mb-16">
+              <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                Get in Touch
+              </h2>
+              <p className="text-lg text-gray-650 dark:text-gray-400">
+                Have questions about enterprise plans or security integrations? Drop us a message.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 bg-white dark:bg-gray-900/50 border border-gray-150 dark:border-gray-800 rounded-3xl p-8 shadow-xl">
+              {/* Left Column info */}
+              <div className="space-y-6 flex flex-col justify-between">
+                <div className="space-y-4">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">Contact Information</h3>
+                  <p className="text-sm text-gray-650 dark:text-gray-400 leading-relaxed">
+                    Our technical support team is available 24/7 to assist with onboarding automation, vector database configurations, and secure code scan setups.
+                  </p>
+                </div>
+
+                <div className="space-y-3 text-xs text-gray-600 dark:text-gray-400">
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-indigo-650">Email:</span>
+                    <span>support@onboardai.com</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-indigo-650">Hours:</span>
+                    <span>Mon - Sun, 24/7 Support</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column Form */}
+              <form onSubmit={(e) => { e.preventDefault(); alert('Message sent successfully!'); }} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Your Name</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Enter your name"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Email Address</label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="you@example.com"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Message</label>
+                  <textarea
+                    required
+                    rows={4}
+                    placeholder="Describe your request..."
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-750 text-white font-bold rounded-xl text-sm transition-all shadow-md cursor-pointer"
+                >
+                  Send Message
+                </button>
+              </form>
             </div>
           </div>
         </div>

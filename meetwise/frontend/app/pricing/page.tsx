@@ -85,7 +85,7 @@ export default function PricingPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-black dark:to-indigo-950">
             {/* Top Navigation Bar Header */}
-            <header className="absolute top-0 left-0 right-0 z-50 bg-white/60 dark:bg-gray-950/60 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 px-6 py-4">
+            <header className="fixed top-0 left-0 right-0 z-50 bg-white/60 dark:bg-gray-950/60 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 px-6 py-4">
                 <div className="max-w-6xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <Logo />
@@ -94,7 +94,7 @@ export default function PricingPage() {
                         <Link href="/" className="hover:text-indigo-655 transition-colors">Home</Link>
                         <Link href="/dashboard" className="hover:text-indigo-655 transition-colors">Features</Link>
                         <Link href="/pricing" className="hover:text-indigo-655 transition-colors">Pricing</Link>
-                        <Link href="/pricing" className="hover:text-indigo-655 transition-colors">Contact</Link>
+                        <Link href="/#contact" className="hover:text-indigo-655 transition-colors">Contact</Link>
                     </nav>
                     <div className="flex items-center gap-3">
                         {authLoading ? (
