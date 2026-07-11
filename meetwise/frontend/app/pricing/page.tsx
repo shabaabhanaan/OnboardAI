@@ -92,7 +92,7 @@ export default function PricingPage() {
                     </div>
                     <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-gray-600 dark:text-gray-300">
                         <Link href="/" className="hover:text-indigo-655 transition-colors">Home</Link>
-                        <Link href="/dashboard" className="hover:text-indigo-655 transition-colors">Features</Link>
+                        <Link href="/#features" className="hover:text-indigo-655 transition-colors">Features</Link>
                         <Link href="/pricing" className="hover:text-indigo-655 transition-colors">Pricing</Link>
                         <Link href="/#contact" className="hover:text-indigo-655 transition-colors">Contact</Link>
                     </nav>
@@ -104,9 +104,14 @@ export default function PricingPage() {
                                 Dashboard
                             </Link>
                         ) : (
-                            <Link href="/register" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-750 text-white text-xs font-extrabold rounded-xl transition-all shadow-md">
-                                Get Started
-                            </Link>
+                            <div className="flex items-center gap-4">
+                                <Link href="/login" className="text-sm font-semibold text-gray-650 dark:text-gray-300 hover:text-indigo-655 transition-colors">
+                                    Sign In
+                                </Link>
+                                <Link href="/register" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-750 text-white text-xs font-extrabold rounded-xl transition-all shadow-md">
+                                    Get Started
+                                </Link>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -137,7 +142,7 @@ export default function PricingPage() {
                                 style={{ animationDelay: `${index * 0.1}s` }}
                             >
                                 {plan.highlighted && (
-                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-semibold rounded-full">
+                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-indigo-600 text-white text-sm font-semibold rounded-full shadow-md">
                                         Most Popular
                                     </div>
                                 )}
@@ -173,14 +178,14 @@ export default function PricingPage() {
                                             amount={3600}
                                             orderId={`PRO-${Date.now()}`}
                                             items="OnboardAI Pro Monthly"
-                                            className={`w-full py-3 px-6 rounded-xl font-semibold text-center transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 bg-gradient-to-r from-indigo-600 to-purple-600 text-white`}
+                                            className={`w-full py-3 px-6 rounded-xl font-semibold text-center transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 bg-indigo-600 hover:bg-indigo-750 text-white`}
                                         />
                                     </div>
                                 ) : (
                                     <Link
                                         href={plan.href}
                                         className={`block w-full py-3 px-6 rounded-xl font-semibold text-center transition-all duration-300 mb-6 ${plan.highlighted
-                                            ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg hover:shadow-xl hover:scale-105'
+                                            ? 'bg-indigo-600 hover:bg-indigo-750 text-white shadow-lg hover:shadow-xl hover:scale-105'
                                             : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
                                             }`}
                                     >
