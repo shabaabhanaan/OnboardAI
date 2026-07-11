@@ -42,9 +42,10 @@ export default function LoginPage() {
                         <Logo />
                     </div>
                     <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-gray-600 dark:text-gray-300">
-                        <Link href="/dashboard" className="hover:text-indigo-650 transition-colors">Features</Link>
-                        <Link href="/pricing" className="hover:text-indigo-650 transition-colors">Pricing</Link>
-                        <Link href="/pricing" className="hover:text-indigo-650 transition-colors">Contact</Link>
+                        <Link href="/" className="hover:text-indigo-655 transition-colors">Home</Link>
+                        <Link href="/dashboard" className="hover:text-indigo-655 transition-colors">Features</Link>
+                        <Link href="/pricing" className="hover:text-indigo-655 transition-colors">Pricing</Link>
+                        <Link href="/pricing" className="hover:text-indigo-655 transition-colors">Contact</Link>
                     </nav>
                     <div className="flex items-center gap-3">
                         <Link href="/register" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-750 text-white text-xs font-extrabold rounded-xl transition-all shadow-md">
