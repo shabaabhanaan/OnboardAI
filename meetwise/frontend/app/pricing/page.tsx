@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { auth } from "@/lib/api";
 import { useAuth } from "@/components/auth-provider";
+import { Logo } from "@/components/Logo";
 
 export default function PricingPage() {
     const { user, loading: authLoading } = useAuth();
@@ -260,8 +261,48 @@ export default function PricingPage() {
             </main>
 
             {/* Footer */}
-            <footer className="text-center py-8 text-gray-600 dark:text-gray-400 border-t border-gray-200 dark:border-gray-800 mt-16">
-                <p>© 2024 OnboardAI. All plans include AI-powered architecture analysis.</p>
+            <footer className="bg-slate-50 dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 mt-20 pt-16 pb-12 px-6">
+                <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                            <Logo />
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                            AI-powered codebase onboarding developer copilot that structures guides, locates issues, and reviews pull requests instantly.
+                        </p>
+                    </div>
+                    <div>
+                        <h4 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Product</h4>
+                        <ul className="space-y-2 text-xs text-gray-500 dark:text-gray-400">
+                            <li><Link href="/pricing" className="hover:text-indigo-650 transition-colors">Pricing Plans</Link></li>
+                            <li><a href="#" className="hover:text-indigo-650 transition-colors">Features List</a></li>
+                            <li><a href="#" className="hover:text-indigo-650 transition-colors">Security Details</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Resources</h4>
+                        <ul className="space-y-2 text-xs text-gray-500 dark:text-gray-400">
+                            <li><a href="#" className="hover:text-indigo-650 transition-colors">Developer Docs</a></li>
+                            <li><a href="#" className="hover:text-indigo-650 transition-colors">GitHub Marketplace</a></li>
+                            <li><a href="#" className="hover:text-indigo-650 transition-colors">System Status</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Company</h4>
+                        <ul className="space-y-2 text-xs text-gray-500 dark:text-gray-400">
+                            <li><a href="#" className="hover:text-indigo-650 transition-colors">About Us</a></li>
+                            <li><a href="#" className="hover:text-indigo-650 transition-colors">Careers Page</a></li>
+                            <li><a href="#" className="hover:text-indigo-650 transition-colors">Contact Support</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div className="max-w-6xl mx-auto pt-8 border-t border-gray-200 dark:border-gray-800/80 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                    <p>© {new Date().getFullYear()} OnboardAI. All plans include AI-powered architecture analysis.</p>
+                    <div className="flex gap-4">
+                        <a href="#" className="hover:text-indigo-655 transition-colors">Privacy Policy</a>
+                        <a href="#" className="hover:text-indigo-655 transition-colors">Terms of Service</a>
+                    </div>
+                </div>
             </footer>
         </div>
     );

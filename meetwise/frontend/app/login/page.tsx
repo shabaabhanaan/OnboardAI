@@ -42,9 +42,9 @@ export default function LoginPage() {
                         <Logo />
                     </div>
                     <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-gray-600 dark:text-gray-300">
+                        <Link href="/dashboard" className="hover:text-indigo-650 transition-colors">Features</Link>
                         <Link href="/pricing" className="hover:text-indigo-650 transition-colors">Pricing</Link>
-                        <a href="https://github.com" target="_blank" rel="noreferrer" className="hover:text-indigo-650 transition-colors">Documentation</a>
-                        <a href="https://github.com" target="_blank" rel="noreferrer" className="hover:text-indigo-650 transition-colors">GitHub</a>
+                        <Link href="/pricing" className="hover:text-indigo-650 transition-colors">Contact</Link>
                     </nav>
                     <div className="flex items-center gap-3">
                         <Link href="/register" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-750 text-white text-xs font-extrabold rounded-xl transition-all shadow-md">
@@ -61,19 +61,13 @@ export default function LoginPage() {
             </div>
 
             <div className="w-full max-w-md z-10">
-                {/* Welcome Message */}
-                <div className="text-center mb-6">
-                    <p className="text-sm font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">
-                        Welcome back
-                    </p>
-                </div>
-
                 {/* Login Card */}
-                <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-3xl shadow-2xl p-8 border border-gray-250/60 dark:border-gray-700/60 animate-fadeIn">
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] p-8 border border-white/40 dark:border-white/10 relative overflow-hidden animate-fadeIn">
+                    <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 absolute top-0 left-0"></div>
+                    <h2 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight mb-1">
                         Welcome Back
                     </h2>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
+                    <p className="text-gray-500 dark:text-gray-400 text-xs mb-6">
                         Sign in to map your codebases
                     </p>
 
