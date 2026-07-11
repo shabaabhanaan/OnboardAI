@@ -60,7 +60,7 @@ export default function LoginPage() {
                 <div className="absolute bottom-[20%] right-[10%] w-[450px] h-[450px] rounded-full bg-purple-300/20 dark:bg-purple-900/10 blur-[90px] animate-pulse" style={{ animationDelay: "2s" }}></div>
             </div>
 
-            <div className="w-full max-w-md z-10">
+            <div className="w-full max-w-[490px] z-10">
                 {/* Login Card */}
                 <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] p-8 border border-white/40 dark:border-white/10 relative overflow-hidden animate-fadeIn">
                     <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 absolute top-0 left-0"></div>
