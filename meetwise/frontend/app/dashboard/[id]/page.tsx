@@ -455,106 +455,50 @@ export default function MeetingDetailPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-black dark:to-indigo-950 transition-colors duration-300">
-            {/* Navbar */}
-            <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm sticky top-0 z-50">
-                <div className="container mx-auto px-6 py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <Link
-                                href="/dashboard"
-                                className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                            >
-                                <ArrowLeft className="w-5 h-5" />
-                                Back
-                            </Link>
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-md">
-                                    <Sparkles className="w-6 h-6 text-white" />
-                                </div>
-                                <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                                    OnboardAI
-                                </h1>
+        <div className="flex h-screen bg-slate-50 dark:bg-gray-950 text-slate-900 dark:text-slate-100 overflow-hidden font-sans">
+            {/* Left Sidebar */}
+            <aside className="w-80 bg-white dark:bg-gray-900 border-r border-slate-200 dark:border-gray-800 flex flex-col justify-between shrink-0">
+                <div className="flex flex-col overflow-y-auto">
+                    {/* Header */}
+                    <div className="p-6 border-b border-slate-200 dark:border-gray-800 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-md">
+                                <Sparkles className="w-5 h-5 text-white" />
                             </div>
+                            <span className="font-extrabold text-xl bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                                OnboardAI
+                            </span>
                         </div>
-
-                        <button
-                            onClick={handleDelete}
-                            disabled={deleting}
-                            className="flex items-center gap-2 px-4 py-2 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors disabled:opacity-50"
+                        <Link
+                            href="/dashboard"
+                            className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                            title="Back to Dashboard"
                         >
-                            <Trash2 className="w-5 h-5" />
-                            {deleting ? "Deleting..." : "Delete Guide"}
-                        </button>
-                    </div>
-                </div>
-            </nav>
-
-            {/* Main Content Container */}
-            <main className="container mx-auto px-6 py-10">
-                <div className="max-w-6xl mx-auto space-y-8">
-                    
-                    {/* Header Summary Info */}
-                    <div className="bg-white dark:bg-gray-800/80 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-3xl p-8 shadow-xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                                <Calendar className="w-4 h-4" />
-                                {new Date(summary.created_at).toLocaleDateString(undefined, { dateStyle: 'long' })}
-                            </div>
-                            <h2 className="text-4xl font-extrabold text-gray-900 dark:text-white leading-tight">
-                                {summary.title}
-                            </h2>
-                            <p className="text-gray-600 dark:text-gray-400 max-w-xl">
-                                AI-synthesized architectural roadmap, health scores, and learning checklists.
-                            </p>
-                        </div>
-
-                        {/* Onboarding Checklist Status Gauge */}
-                        <div className="flex items-center gap-4 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 p-5 rounded-2xl md:min-w-64">
-                            <div className="relative w-16 h-16 flex items-center justify-center shrink-0">
-                                <svg className="w-full h-full transform -rotate-90">
-                                    <circle
-                                        cx="32"
-                                        cy="32"
-                                        r="28"
-                                        className="stroke-gray-200 dark:stroke-gray-700 fill-none"
-                                        strokeWidth="6"
-                                    />
-                                    <circle
-                                        cx="32"
-                                        cy="32"
-                                        r="28"
-                                        className="stroke-indigo-600 dark:stroke-indigo-400 fill-none transition-all duration-500 ease-out"
-                                        strokeWidth="6"
-                                        strokeDasharray={176}
-                                        strokeDashoffset={176 - (176 * progressPercent) / 100}
-                                    />
-                                </svg>
-                                <span className="absolute text-sm font-bold text-gray-800 dark:text-gray-200">
-                                    {progressPercent}%
-                                </span>
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-gray-800 dark:text-gray-200 text-sm">
-                                    Learning Progress
-                                </h4>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                    {completedTasks} of {totalTasks} Tasks Finished
-                                </p>
-                            </div>
-                        </div>
+                            <ArrowLeft className="w-4 h-4" />
+                        </Link>
                     </div>
 
-                    {/* Navigation Tabs */}
-                    <div className="flex overflow-x-auto gap-2 p-1 bg-white/70 dark:bg-gray-850/50 backdrop-blur-md rounded-2xl border border-gray-200 dark:border-gray-750 shadow-sm max-w-fit">
+                    {/* Repository details */}
+                    <div className="p-6 border-b border-slate-200 dark:border-gray-800 space-y-1">
+                        <h2 className="font-extrabold text-slate-800 dark:text-white text-base leading-snug" title={summary.title}>
+                            {summary.title}
+                        </h2>
+                        <span className="text-xs text-slate-400 font-bold flex items-center gap-1.5">
+                            <Calendar className="w-3.5 h-3.5" />
+                            {new Date(summary.created_at).toLocaleDateString(undefined, { dateStyle: 'medium' })}
+                        </span>
+                    </div>
+
+                    {/* Navigation Links */}
+                    <nav className="p-4 space-y-1">
                         {[
-                            { id: "overview", label: "Architecture", icon: Brain },
+                            { id: "overview", label: "Architecture Overview", icon: Brain },
                             { id: "files", label: "Visual Graph", icon: FileCode2 },
                             { id: "plan", label: "Learning Plan", icon: CheckSquare },
                             { id: "health", label: "Health Audit", icon: Activity },
-                            { id: "chat", label: "AI Q&A", icon: MessageSquare },
+                            { id: "chat", label: "AI Q&A Assistant", icon: MessageSquare },
                             { id: "tickets", label: "First Ticket Guide", icon: Terminal },
-                            { id: "reviews", label: "Code Reviews", icon: Code2 },
+                            { id: "reviews", label: "AI Code Reviews", icon: Code2 },
                             { id: "sync", label: "GitHub Webhook & Sync", icon: GitPullRequest }
                         ].map(tab => {
                             const Icon = tab.icon;
@@ -563,19 +507,70 @@ export default function MeetingDetailPage() {
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id as any)}
-                                    className={`flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm transition-all duration-300 cursor-pointer shrink-0 ${
+                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer ${
                                         isActive
-                                            ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md hover:scale-102"
-                                            : "text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-800/40"
+                                            ? "bg-indigo-650 text-white shadow-md shadow-indigo-600/10"
+                                            : "text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-gray-800/40"
                                     }`}
                                 >
-                                    <Icon className="w-4 h-4" />
+                                    <Icon className="w-4.5 h-4.5 shrink-0" />
                                     {tab.label}
                                 </button>
                             );
                         })}
+                    </nav>
+                </div>
+
+                {/* Footer Progress & Actions */}
+                <div className="p-6 border-t border-slate-200 dark:border-gray-800 space-y-4">
+                    {/* Learning progress */}
+                    <div className="flex items-center gap-4 bg-slate-50 dark:bg-gray-950 p-4 rounded-2xl border border-slate-150 dark:border-gray-850">
+                        <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
+                            <svg className="w-full h-full transform -rotate-90">
+                                <circle
+                                    cx="24"
+                                    cy="24"
+                                    r="20"
+                                    className="stroke-slate-200 dark:stroke-slate-800 fill-none"
+                                    strokeWidth="4"
+                                />
+                                <circle
+                                    cx="24"
+                                    cy="24"
+                                    r="20"
+                                    className="stroke-indigo-600 dark:stroke-indigo-400 fill-none transition-all duration-500"
+                                    strokeWidth="4"
+                                    strokeDasharray={126}
+                                    strokeDashoffset={126 - (126 * progressPercent) / 100}
+                                    strokeLinecap="round"
+                                />
+                            </svg>
+                            <span className="absolute text-xs font-black text-slate-800 dark:text-white">{Math.round(progressPercent)}%</span>
+                        </div>
+                        <div className="space-y-0.5">
+                            <h4 className="font-extrabold text-sm text-slate-800 dark:text-white leading-tight">
+                                Learning Progress
+                            </h4>
+                            <p className="text-xs text-slate-400 font-bold">
+                                {completedTasks} of {totalTasks} finished
+                            </p>
+                        </div>
                     </div>
 
+                    <button
+                        onClick={handleDelete}
+                        disabled={deleting}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 border border-rose-200 dark:border-rose-900 rounded-xl transition-all cursor-pointer disabled:opacity-50"
+                    >
+                        <Trash2 className="w-4 h-4" />
+                        {deleting ? "Deleting..." : "Delete Guide"}
+                    </button>
+                </div>
+            </aside>
+
+            {/* Right Main Content Panel */}
+            <main className="flex-1 overflow-y-auto bg-slate-50/50 dark:bg-gray-950/40 p-10">
+                <div className="max-w-5xl mx-auto">
                     {/* Tab Views */}
                     <div className="min-h-96">
                         {/* Tab 1: Architecture Overview */}
