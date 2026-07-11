@@ -84,39 +84,36 @@ export default function PricingPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-black dark:to-indigo-950">
-            {/* Header */}
-            <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
-                <div className="container mx-auto px-6 py-4">
-                    <div className="flex items-center justify-between">
-                        <Link href="/" className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-md">
-                                <Sparkles className="w-5 h-5 text-white" />
-                            </div>
-                            <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                                OnboardAI
-                            </span>
-                        </Link>
-
-                        <div className="flex items-center gap-4">
-                            {authLoading ? (
-                                <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
-                            ) : user ? (
-                                <Link href="/dashboard" className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-medium">
-                                    <UserIcon className="w-5 h-5" />
-                                    <span>Dashboard</span>
-                                </Link>
-                            ) : (
-                                <Link href="/login" className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium">
-                                    Sign In
-                                </Link>
-                            )}
-                        </div>
+            {/* Top Navigation Bar Header */}
+            <header className="absolute top-0 left-0 right-0 z-50 bg-white/60 dark:bg-gray-950/60 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 px-6 py-4">
+                <div className="max-w-6xl mx-auto flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <Logo />
+                    </div>
+                    <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-gray-600 dark:text-gray-300">
+                        <Link href="/" className="hover:text-indigo-655 transition-colors">Home</Link>
+                        <Link href="/dashboard" className="hover:text-indigo-655 transition-colors">Features</Link>
+                        <Link href="/pricing" className="hover:text-indigo-655 transition-colors">Pricing</Link>
+                        <Link href="/pricing" className="hover:text-indigo-655 transition-colors">Contact</Link>
+                    </nav>
+                    <div className="flex items-center gap-3">
+                        {authLoading ? (
+                            <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                        ) : user ? (
+                            <Link href="/dashboard" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-750 text-white text-xs font-extrabold rounded-xl transition-all shadow-md">
+                                Dashboard
+                            </Link>
+                        ) : (
+                            <Link href="/register" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-750 text-white text-xs font-extrabold rounded-xl transition-all shadow-md">
+                                Get Started
+                            </Link>
+                        )}
                     </div>
                 </div>
-            </nav>
+            </header>
 
             {/* Main Content */}
-            <main className="container mx-auto px-6 py-16">
+            <main className="container mx-auto px-6 pt-32 pb-16">
                 <div className="max-w-7xl mx-auto">
                     {/* Header Section */}
                     <div className="text-center mb-16 animate-fadeIn">
