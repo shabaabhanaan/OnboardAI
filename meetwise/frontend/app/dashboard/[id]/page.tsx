@@ -29,7 +29,9 @@ import {
     RefreshCw,
     Terminal,
     ArrowRight,
-    Info
+    Info,
+    Menu,
+    X
 } from "lucide-react";
 import { onboardings } from "@/lib/api";
 import { useAuth } from "@/components/auth-provider";
@@ -81,6 +83,7 @@ export default function MeetingDetailPage() {
     // Feature States
     const [activeTab, setActiveTab] = useState<"overview" | "files" | "plan" | "health" | "chat" | "tickets" | "sync" | "reviews">("overview");
     const [updatingTasks, setUpdatingTasks] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     
     // Graph Explorer States
     const [selectedNode, setSelectedNode] = useState<string | null>(null);
@@ -455,9 +458,19 @@ export default function MeetingDetailPage() {
     };
 
     return (
-        <div className="flex h-screen bg-slate-50 dark:bg-gray-950 text-slate-900 dark:text-slate-100 overflow-hidden font-sans">
+        <div className="flex h-screen bg-slate-50 dark:bg-gray-950 text-slate-900 dark:text-slate-100 overflow-hidden font-sans relative">
+            {/* Mobile Sidebar backdrop overlay */}
+            {sidebarOpen && (
+                <div 
+                    onClick={() => setSidebarOpen(false)}
+                    className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden"
+                />
+            )}
+
             {/* Left Sidebar */}
-            <aside className="w-80 bg-white dark:bg-gray-900 border-r border-slate-200 dark:border-gray-800 flex flex-col justify-between shrink-0">
+            <aside className={`w-80 bg-white dark:bg-gray-900 border-r border-slate-200 dark:border-gray-800 flex flex-col justify-between shrink-0 fixed lg:static inset-y-0 left-0 z-50 transform transition-transform duration-300 lg:translate-x-0 ${
+                sidebarOpen ? "translate-x-0" : "-translate-x-full"
+            }`}>
                 <div className="flex flex-col overflow-y-auto">
                     {/* Header */}
                     <div className="p-6 border-b border-slate-200 dark:border-gray-800 flex items-center justify-between">
@@ -469,13 +482,22 @@ export default function MeetingDetailPage() {
                                 OnboardAI
                             </span>
                         </div>
-                        <Link
-                            href="/dashboard"
-                            className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                            title="Back to Dashboard"
-                        >
-                            <ArrowLeft className="w-4 h-4" />
-                        </Link>
+                        <div className="flex items-center gap-1.5">
+                            <Link
+                                href="/dashboard"
+                                className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                                title="Back to Dashboard"
+                            >
+                                <ArrowLeft className="w-4 h-4" />
+                            </Link>
+                            <button
+                                onClick={() => setSidebarOpen(false)}
+                                className="lg:hidden p-2 text-slate-500 hover:text-rose-600 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                                title="Close Menu"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
 
                     {/* Repository details */}
@@ -506,7 +528,10 @@ export default function MeetingDetailPage() {
                             return (
                                 <button
                                     key={tab.id}
-                                    onClick={() => setActiveTab(tab.id as any)}
+                                    onClick={() => {
+                                        setActiveTab(tab.id as any);
+                                        setSidebarOpen(false);
+                                    }}
                                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer ${
                                         isActive
                                             ? "bg-indigo-650 text-white shadow-md shadow-indigo-600/10"
@@ -569,7 +594,28 @@ export default function MeetingDetailPage() {
             </aside>
 
             {/* Right Main Content Panel */}
-            <main className="flex-1 overflow-y-auto bg-slate-50/50 dark:bg-gray-950/40 p-10">
+            <main className="flex-1 overflow-y-auto bg-slate-50/50 dark:bg-gray-950/40 p-4 md:p-10 relative">
+                {/* Mobile Top Header */}
+                <div className="lg:hidden flex items-center justify-between bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 p-4 rounded-2xl mb-6 shadow-sm">
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setSidebarOpen(true)}
+                            className="p-2 border border-slate-200 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-gray-800 rounded-xl cursor-pointer"
+                        >
+                            <Menu className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+                        </button>
+                        <span className="font-extrabold text-slate-850 dark:text-white truncate max-w-44 text-sm">
+                            {summary.title}
+                        </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="text-[10px] font-black bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-2 py-1 rounded-md">
+                            {Math.round(progressPercent)}% Done
+                        </div>
+                    </div>
+                </div>
+
                 <div className="max-w-5xl mx-auto">
                     {/* Tab Views */}
                     <div className="min-h-96">
