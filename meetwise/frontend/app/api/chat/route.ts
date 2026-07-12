@@ -4,7 +4,7 @@ export async function POST(req: Request) {
     try {
         const { message, history, context } = await req.json();
 
-        const OPENROUTER_API_KEY = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
+        const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
         if (!OPENROUTER_API_KEY) {
             return NextResponse.json({ error: "OpenRouter API Key is missing on backend" }, { status: 500 });
         }

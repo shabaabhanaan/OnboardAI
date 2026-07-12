@@ -25,7 +25,7 @@ export async function POST(req: Request) {
             if (onboardingList && onboardingList.length > 0) {
                 const commitMessages = commits.map((c: any) => c.message).join('\n');
 
-                const OPENROUTER_API_KEY = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
+                const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
                 
                 for (const guide of onboardingList) {
                     const tasks = guide.action_items || [];
