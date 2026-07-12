@@ -20,20 +20,29 @@ export async function POST(req: Request) {
         const repo = parts[2].split("#")[0];
         const baseUrl = `https://api.github.com/repos/${owner}/${repo}`;
 
-        // 2. Fetch Data in Parallel
+        // 2. Fetch headers setup
         const headers: HeadersInit = { 'User-Agent': 'OnboardAI' };
         const token = clientToken || process.env.GITHUB_TOKEN;
         if (token) {
             headers['Authorization'] = `token ${token}`;
         }
 
+        // Fetch repo info to get default branch
+        const repoInfoRes = await fetch(baseUrl, { headers });
+        if (!repoInfoRes.ok) {
+            throw new Error(`Failed to fetch repository metadata. Status: ${repoInfoRes.status}`);
+        }
+        const repoInfo = await repoInfoRes.json();
+        const defaultBranch = repoInfo.default_branch || "main";
+
+        // 3. Fetch Data in Parallel
         const [readmeRes, packageJsonRes, treeRes] = await Promise.all([
             fetch(`${baseUrl}/readme`, { headers }),
             fetch(`${baseUrl}/contents/package.json`, { headers }),
-            fetch(`${baseUrl}/contents`, { headers })
+            fetch(`${baseUrl}/git/trees/${defaultBranch}?recursive=1`, { headers })
         ]);
 
-        // 3. Process Responses
+        // 4. Process Responses
         let readme = "No README found.";
         if (readmeRes.ok) {
             const data = await readmeRes.json();
@@ -47,18 +56,67 @@ export async function POST(req: Request) {
         }
 
         let fileTree = "Could not fetch file tree.";
+        let recursiveFiles: any[] = [];
         if (treeRes.ok) {
             const data = await treeRes.json();
-            if (Array.isArray(data)) {
-                fileTree = data.map((item: any) =>
-                    `${item.type === 'dir' ? '📁' : '📄'} ${item.path}`
-                ).join('\n');
+            if (data && Array.isArray(data.tree)) {
+                recursiveFiles = data.tree;
+                fileTree = data.tree
+                    .filter((item: any) => item.type === 'blob' || item.type === 'tree')
+                    .map((item: any) =>
+                        `${item.type === 'tree' ? '📁' : '📄'} ${item.path}`
+                    ).join('\n');
             }
         } else if (treeRes.status === 403) {
             fileTree = "GitHub API Rate Limit Exceeded. Could not fetch file tree.";
         }
 
-        // 4. Construct Context String
+        // 5. Filter and download codebase files for semantic search indexing
+        const allowedExtensions = [
+            '.ts', '.tsx', '.js', '.jsx', '.py', '.go', '.java', '.cpp', 
+            '.c', '.h', '.cs', '.rb', '.rs', '.md', '.html', '.css', 
+            '.json', '.yml', '.yaml', '.sql', '.sh'
+        ];
+        const ignoredPaths = [
+            'node_modules/', '.git/', '.github/', 'package-lock.json', 
+            'yarn.lock', 'pnpm-lock.yaml', 'dist/', '.next/', 'build/'
+        ];
+
+        const candidateFiles = recursiveFiles.filter((item: any) => {
+            if (item.type !== 'blob') return false;
+            const hasAllowedExt = allowedExtensions.some(ext => item.path.endsWith(ext));
+            if (!hasAllowedExt) return false;
+            const isIgnored = ignoredPaths.some(ignored => item.path.includes(ignored));
+            return !isIgnored;
+        });
+
+        // Limit to 25 files
+        const filesToDownload = candidateFiles.slice(0, 25);
+
+        // Fetch file contents in parallel
+        const downloadedFiles = await Promise.all(
+            filesToDownload.map(async (file: any) => {
+                try {
+                    const contentRes = await fetch(`${baseUrl}/contents/${file.path}`, { headers });
+                    if (contentRes.ok) {
+                        const contentData = await contentRes.json();
+                        if (contentData.content) {
+                            const decodedContent = Buffer.from(contentData.content, 'base64').toString('utf-8');
+                            return {
+                                path: file.path,
+                                content: decodedContent
+                            };
+                        }
+                    }
+                } catch (e) {
+                    console.error(`Failed to download file ${file.path}:`, e);
+                }
+                return null;
+            })
+        );
+        const validDownloadedFiles = downloadedFiles.filter((f): f is { path: string, content: string } => f !== null);
+
+        // 6. Construct Context String
         let context = `CONTEXT SOURCE: GitHub Repo (${owner}/${repo})\n\n`;
         context += `--- 📂 ROOT FILE STRUCTURE ---\n${fileTree}\n\n`;
         if (packageJson) {
@@ -68,7 +126,8 @@ export async function POST(req: Request) {
 
         return NextResponse.json({
             title: repo,
-            context
+            context,
+            files: validDownloadedFiles
         });
 
     } catch (error: any) {

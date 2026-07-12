@@ -152,7 +152,7 @@ export const isAuthenticated = async (): Promise<boolean> => {
 
 // Onboardings API
 export const onboardings = {
-    create: async (title: string, notes: string) => {
+    create: async (title: string, notes: string, files?: Array<{ path: string; content: string }>) => {
         // 1. Get current user and check plan limits
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('Not authenticated');
@@ -205,6 +205,23 @@ export const onboardings = {
             .single();
 
         if (error) throw error;
+
+        // 4. Save indexed codebase files if provided
+        if (files && files.length > 0) {
+            const filesToInsert = files.map(file => ({
+                onboarding_id: data.id,
+                path: file.path,
+                content: file.content
+            }));
+            const { error: filesError } = await supabase
+                .from('codebase_files')
+                .insert(filesToInsert);
+
+            if (filesError) {
+                console.error("Error inserting codebase files:", filesError);
+            }
+        }
+
         return data;
     },
 

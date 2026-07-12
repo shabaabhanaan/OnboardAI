@@ -64,12 +64,12 @@ export default function NewMeetingPage() {
                 if (!githubUrl) throw new Error("Please enter a GitHub URL");
 
                 // Fetch data first
-                const { title, context } = await fetchGithubRepo(githubUrl);
+                const { title, context, files } = await fetchGithubRepo(githubUrl);
 
                 // Use the fetched data to create the onboarding
                 // We use the manual title if user entered one, otherwise repo name
                 const finalTitle = formData.title || title;
-                summary = await summaries.create(finalTitle, context);
+                summary = await summaries.create(finalTitle, context, files);
 
             } else {
                 // Standard text input

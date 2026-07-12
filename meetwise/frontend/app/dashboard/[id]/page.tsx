@@ -195,7 +195,8 @@ export default function MeetingDetailPage() {
                 body: JSON.stringify({
                     codeSnippet: reviewSnippet,
                     filename: reviewFilename || "unnamed_file.ts",
-                    context: summary.notes
+                    context: summary.notes,
+                    onboardingId: summary.id
                 })
             });
 
@@ -272,7 +273,8 @@ export default function MeetingDetailPage() {
                 body: JSON.stringify({
                     message: userMsg,
                     history: chatMessages.slice(1), 
-                    context: summary.notes
+                    context: summary.notes,
+                    onboardingId: summary.id
                 })
             });
 
@@ -301,7 +303,8 @@ export default function MeetingDetailPage() {
                 body: JSON.stringify({
                     ticketTitle,
                     ticketDescription: ticketDesc,
-                    context: summary.notes
+                    context: summary.notes,
+                    onboardingId: summary.id
                 })
             });
 
