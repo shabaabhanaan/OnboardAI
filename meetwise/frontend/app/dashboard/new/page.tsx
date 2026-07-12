@@ -114,7 +114,7 @@ export default function NewMeetingPage() {
                                 <Sparkles className="w-6 h-6 text-white" />
                             </div>
                             <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                                OnboardAI
+                                Codereporeach
                             </h1>
                         </div>
                     </div>

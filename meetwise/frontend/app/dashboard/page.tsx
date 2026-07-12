@@ -60,7 +60,7 @@ export default function DashboardPage() {
             <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
                 <div className="container mx-auto px-6 py-4">
                     <div className="flex items-center justify-between">
-                        <Logo textSize="text-2xl" iconSize="w-6 h-6" href="/dashboard" />
+                        <Logo textSize="text-2xl" href="/dashboard" />
 
                         <button
                             onClick={handleLogout}

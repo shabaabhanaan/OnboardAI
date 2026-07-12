@@ -21,7 +21,7 @@ export async function POST(req: Request) {
         const baseUrl = `https://api.github.com/repos/${owner}/${repo}`;
 
         // 2. Fetch headers setup
-        const headers: HeadersInit = { 'User-Agent': 'OnboardAI' };
+        const headers: HeadersInit = { 'User-Agent': 'Codereporeach' };
         const token = clientToken || process.env.GITHUB_TOKEN;
         if (token) {
             headers['Authorization'] = `token ${token}`;

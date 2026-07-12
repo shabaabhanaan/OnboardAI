@@ -57,7 +57,7 @@ export default function LoginPage() {
                         <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-md">
                             <Sparkles className="w-5 h-5 text-white" />
                         </div>
-                        <span className="text-xl font-black tracking-tight text-white">OnboardAI</span>
+                        <span className="text-xl font-black tracking-tight text-white">Codereporeach</span>
                     </Link>
                 </div>
 
@@ -73,7 +73,7 @@ export default function LoginPage() {
 
                 {/* Bottom indicator */}
                 <div className="z-10 text-xs text-indigo-200/60 font-semibold tracking-wider uppercase">
-                    © 2026 OnboardAI Inc. All rights reserved.
+                    © 2026 Codereporeach Inc. All rights reserved.
                 </div>
             </div>
 

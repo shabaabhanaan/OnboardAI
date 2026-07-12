@@ -560,7 +560,7 @@ export default function MeetingDetailPage() {
                                 <Sparkles className="w-5 h-5 text-white" />
                             </div>
                             <span className="font-extrabold text-xl bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                                OnboardAI
+                                Codereporeach
                             </span>
                         </div>
                         <div className="flex items-center gap-1.5">
@@ -1248,7 +1248,7 @@ export default function MeetingDetailPage() {
                                     <div className="flex items-center gap-2">
                                         <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
                                         <span className="text-sm font-bold text-gray-800 dark:text-gray-200">
-                                            OnboardAI Assistant
+                                            Codereporeach Assistant
                                         </span>
                                     </div>
                                     <span className="text-xs text-gray-400 dark:text-gray-500">

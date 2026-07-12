@@ -24,13 +24,13 @@ export async function POST(req: NextRequest) {
         const mailOptions = {
             from: '"CodeOnboard" <' + process.env.SMTP_USER + '>',
             to: email,
-            subject: `Welcome to OnboardAI, ${username}! 🚀`,
+            subject: `Welcome to Codereporeach, ${username}! 🚀`,
             html: `
                 <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-                    <h2 style="color: #4f46e5; text-align: center;">Welcome to OnboardAI!</h2>
+                    <h2 style="color: #4f46e5; text-align: center;">Welcome to Codereporeach!</h2>
                     <p>Hi <strong>${username}</strong>,</p>
                     <p>Thanks for joining! You're now ready to master any codebase in minutes.</p>
-                    <p>With OnboardAI, you can:</p>
+                    <p>With Codereporeach, you can:</p>
                     <ul>
                         <li><strong>Map Architecture:</strong> Get instant high-level overviews of complex repos.</li>
                         <li><strong>Find Critical Files:</strong> Know exactly where to start reading.</li>
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
                     </div>
                     <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
                     <p style="font-size: 12px; color: #666; text-align: center;">
-                        © 2026 OnboardAI. Master any codebase.
+                        © 2026 Codereporeach. Master any codebase.
                     </p>
                 </div>
             `,

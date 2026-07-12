@@ -25,7 +25,7 @@ export default function PricingPage() {
             name: "Free",
             price: "$0",
             period: "forever",
-            description: "Perfect for trying out OnboardAI",
+            description: "Perfect for trying out Codereporeach",
             features: [
                 "1 public repo onboarding",
                 "Basic Architecture Overview",
@@ -182,7 +182,7 @@ export default function PricingPage() {
                                         <PayHereButton
                                             amount={3600}
                                             orderId={`PRO-${Date.now()}`}
-                                            items="OnboardAI Pro Monthly"
+                                            items="Codereporeach Pro Monthly"
                                             className={`w-full py-3 px-6 rounded-xl font-semibold text-center transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 bg-indigo-600 hover:bg-indigo-750 text-white`}
                                         />
                                     </div>
@@ -311,7 +311,7 @@ export default function PricingPage() {
                     </div>
                 </div>
                 <div className="max-w-6xl mx-auto pt-8 border-t border-gray-200 dark:border-gray-800/80 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-                    <p>© {new Date().getFullYear()} OnboardAI. All plans include AI-powered architecture analysis.</p>
+                    <p>© {new Date().getFullYear()} Codereporeach. All plans include AI-powered architecture analysis.</p>
                     <div className="flex gap-4">
                         <a href="#" className="hover:text-indigo-655 transition-colors">Privacy Policy</a>
                         <a href="#" className="hover:text-indigo-655 transition-colors">Terms of Service</a>

@@ -89,7 +89,7 @@ export default function Home() {
         <div className="text-center max-w-6xl mx-auto">
           {/* Logo/Title */}
           <div className="flex items-center justify-center gap-3 mb-6 animate-fadeIn">
-            <Logo textSize="text-5xl" iconSize="w-12 h-12" />
+            <Logo textSize="text-5xl" />
           </div>
 
           {/* Tagline */}
@@ -242,7 +242,7 @@ export default function Home() {
                 <div className="space-y-3 text-xs text-gray-600 dark:text-gray-400">
                   <div className="flex items-center gap-3">
                     <span className="font-bold text-indigo-650">Email:</span>
-                    <span>support@onboardai.com</span>
+                    <span>support@codereporeach.com</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="font-bold text-indigo-650">Hours:</span>

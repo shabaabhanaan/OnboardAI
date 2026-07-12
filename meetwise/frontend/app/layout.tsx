@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OnboardAI - Master Any Codebase in Minutes",
+  title: "Codereporeach - Master Any Codebase in Minutes",
   description: "AI-powered onboarding engineer that helps developers understand codebases, map architectures, and create learning plans instantly.",
 };
 

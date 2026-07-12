@@ -12,7 +12,7 @@ export const Footer: React.FC = () => {
           {/* Brand Info */}
           <div className="space-y-4 md:col-span-1">
             <div className="flex items-center gap-2">
-              <Logo textSize="text-2xl" iconSize="w-6 h-6" />
+              <Logo textSize="text-2xl" />
             </div>
             <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
               Master any codebase in minutes. Stop getting lost in complex repositories and start contributing instantly.
@@ -37,7 +37,7 @@ export const Footer: React.FC = () => {
                 <Twitter className="w-4 h-4" />
               </a>
               <a 
-                href="mailto:support@onboardai.com" 
+                href="mailto:support@codereporeach.com" 
                 className="p-2 rounded-lg bg-gray-50 dark:bg-gray-900 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                 aria-label="Email support"
               >
@@ -126,7 +126,7 @@ export const Footer: React.FC = () => {
 
         {/* Bottom copyright section */}
         <div className="mt-12 pt-8 border-t border-gray-100 dark:border-gray-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500 dark:text-gray-500">
-          <p>© {new Date().getFullYear()} OnboardAI. Powered by Artificial Intelligence.</p>
+          <p>© {new Date().getFullYear()} Codereporeach. Powered by Artificial Intelligence.</p>
           <p className="flex items-center gap-1">
             Built with 💜 for developers worldwide.
           </p>
