@@ -209,6 +209,7 @@ export default function LoginPage() {
 
                             <button
                                 type="button"
+                                onClick={() => auth.signInWithFacebook()}
                                 className="py-2.5 px-4 bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-880 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
                             >
                                 <svg className="w-4 h-4 text-indigo-600 fill-current" viewBox="0 0 24 24">
@@ -218,6 +219,7 @@ export default function LoginPage() {
 
                             <button
                                 type="button"
+                                onClick={() => auth.signInWithGithub()}
                                 className="py-2.5 px-4 bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-880 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
                             >
                                 <svg className="w-4 h-4 text-gray-900 dark:text-white fill-current" viewBox="0 0 24 24">

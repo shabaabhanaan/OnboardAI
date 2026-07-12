@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
     try {
-        const { url } = await req.json();
+        const { url, token: clientToken } = await req.json();
 
         if (!url) {
             return NextResponse.json({ error: "URL is required" }, { status: 400 });
@@ -21,10 +21,16 @@ export async function POST(req: Request) {
         const baseUrl = `https://api.github.com/repos/${owner}/${repo}`;
 
         // 2. Fetch Data in Parallel
+        const headers: HeadersInit = { 'User-Agent': 'OnboardAI' };
+        const token = clientToken || process.env.GITHUB_TOKEN;
+        if (token) {
+            headers['Authorization'] = `token ${token}`;
+        }
+
         const [readmeRes, packageJsonRes, treeRes] = await Promise.all([
-            fetch(`${baseUrl}/readme`, { headers: { 'User-Agent': 'OnboardAI' } }),
-            fetch(`${baseUrl}/contents/package.json`, { headers: { 'User-Agent': 'OnboardAI' } }),
-            fetch(`${baseUrl}/contents`, { headers: { 'User-Agent': 'OnboardAI' } })
+            fetch(`${baseUrl}/readme`, { headers }),
+            fetch(`${baseUrl}/contents/package.json`, { headers }),
+            fetch(`${baseUrl}/contents`, { headers })
         ]);
 
         // 3. Process Responses

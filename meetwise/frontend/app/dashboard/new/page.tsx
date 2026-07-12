@@ -24,10 +24,17 @@ export default function NewMeetingPage() {
 
     // Helper to fetch GitHub content (Server-Side Proxy)
     const fetchGithubRepo = async (url: string) => {
+        const { supabase } = await import("@/lib/supabase");
+        const { data: { session } } = await supabase.auth.getSession();
+        const providerToken = session?.provider_token;
+
         const response = await fetch("/api/github", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ url }),
+            body: JSON.stringify({ 
+                url,
+                token: providerToken
+            }),
         });
 
         const data = await response.json();
