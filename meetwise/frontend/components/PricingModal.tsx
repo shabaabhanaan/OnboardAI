@@ -95,7 +95,12 @@ export default function PricingModal({ onClose }: PricingModalProps) {
                     </div>
 
                     {/* Team Plan */}
-                    <div className="border-2 border-gray-300 dark:border-gray-600 rounded-2xl p-6">
+                    <div className="border-2 border-gray-300 dark:border-gray-600 rounded-2xl p-6 relative opacity-85">
+                        <div className="absolute top-4 right-4">
+                            <span className="px-3 py-1 bg-gray-500 text-white text-xs font-semibold rounded-full">
+                                COMING SOON
+                            </span>
+                        </div>
                         <div className="mb-6">
                             <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">
                                 Team Plan
@@ -140,12 +145,12 @@ export default function PricingModal({ onClose }: PricingModalProps) {
                             </li>
                         </ul>
 
-                        <Link
-                            href="/pricing"
-                            className="block w-full py-3 px-6 border-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 font-semibold rounded-xl text-center hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all duration-300"
+                        <button
+                            disabled
+                            className="block w-full py-3 px-6 bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 font-semibold rounded-xl text-center cursor-not-allowed border-2 border-transparent"
                         >
-                            Contact Sales
-                        </Link>
+                            Not Yet Enabled
+                        </button>
                     </div>
                 </div>
 

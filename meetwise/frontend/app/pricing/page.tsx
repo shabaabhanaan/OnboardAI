@@ -138,12 +138,17 @@ export default function PricingPage() {
                                 className={`relative rounded-2xl p-8 border-2 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 animate-fadeIn ${plan.highlighted
                                     ? 'border-indigo-600 dark:border-indigo-500 bg-gradient-to-br from-white to-indigo-50 dark:from-gray-800 dark:to-indigo-950 shadow-xl scale-105'
                                     : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
-                                    }`}
+                                    } ${plan.id === 'team' ? 'opacity-85' : ''}`}
                                 style={{ animationDelay: `${index * 0.1}s` }}
                             >
                                 {plan.highlighted && (
                                     <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-indigo-600 text-white text-sm font-semibold rounded-full shadow-md">
                                         Most Popular
+                                    </div>
+                                )}
+                                {plan.id === 'team' && (
+                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gray-500 text-white text-sm font-semibold rounded-full shadow-md">
+                                        Coming Soon
                                     </div>
                                 )}
 
@@ -181,6 +186,13 @@ export default function PricingPage() {
                                             className={`w-full py-3 px-6 rounded-xl font-semibold text-center transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 bg-indigo-600 hover:bg-indigo-750 text-white`}
                                         />
                                     </div>
+                                ) : plan.id === "team" ? (
+                                    <button
+                                        disabled
+                                        className="w-full py-3 px-6 rounded-xl font-semibold text-center bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 mb-6 cursor-not-allowed border-2 border-transparent"
+                                    >
+                                        Not Yet Enabled
+                                    </button>
                                 ) : (
                                     <Link
                                         href={plan.href}
