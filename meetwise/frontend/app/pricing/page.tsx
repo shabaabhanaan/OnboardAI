@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Check, Sparkles, User as UserIcon, Loader2 } from "lucide-react";
 import PayHereButton from "@/components/PayHereButton";
+import PayPalButton from "@/components/PayPalButton";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { auth } from "@/lib/api";
@@ -178,7 +179,16 @@ export default function PricingPage() {
                                         Current Plan
                                     </div>
                                 ) : plan.id === "pro" ? (
-                                    <div className="mb-6">
+                                    <div className="mb-6 space-y-4">
+                                        <PayPalButton
+                                            amount={19.00}
+                                            className="w-full"
+                                        />
+                                        <div className="relative flex py-1 items-center">
+                                            <div className="flex-grow border-t border-gray-300 dark:border-gray-700"></div>
+                                            <span className="flex-shrink mx-4 text-gray-400 text-xs">or</span>
+                                            <div className="flex-grow border-t border-gray-300 dark:border-gray-700"></div>
+                                        </div>
                                         <PayHereButton
                                             amount={3600}
                                             orderId={`PRO-${Date.now()}`}
