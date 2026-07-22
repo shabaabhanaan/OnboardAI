@@ -94,7 +94,7 @@ export default function PricingPage() {
                         <Link href="/" className="hover:text-indigo-655 transition-colors">Home</Link>
                         <Link href="/#features" className="hover:text-indigo-655 transition-colors">Features</Link>
                         <Link href="/pricing" className="hover:text-indigo-655 transition-colors">Pricing</Link>
-                        <Link href="/#contact" className="hover:text-indigo-655 transition-colors">Contact</Link>
+                        <Link href="/contact" className="hover:text-indigo-655 transition-colors">Contact</Link>
                     </nav>
                     <div className="flex items-center gap-3">
                         {authLoading ? (

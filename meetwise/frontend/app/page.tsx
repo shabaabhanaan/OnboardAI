@@ -65,7 +65,7 @@ export default function Home() {
                   <Link href="/" className="hover:text-indigo-655 transition-colors">Home</Link>
                   <Link href="#features" className="hover:text-indigo-655 transition-colors">Features</Link>
                   <Link href="/pricing" className="hover:text-indigo-655 transition-colors">Pricing</Link>
-                  <Link href="#contact" className="hover:text-indigo-655 transition-colors">Contact</Link>
+                  <Link href="/contact" className="hover:text-indigo-655 transition-colors">Contact</Link>
               </nav>
               <div className="flex items-center gap-4">
                   <Link href="/login" className="text-sm font-semibold text-gray-650 dark:text-gray-300 hover:text-indigo-655 transition-colors">
@@ -242,7 +242,7 @@ export default function Home() {
                 <div className="space-y-3 text-xs text-gray-600 dark:text-gray-400">
                   <div className="flex items-center gap-3">
                     <span className="font-bold text-indigo-650">Email:</span>
-                    <span>support@codereporeach.com</span>
+                    <span>info.zeoraz@gmail.com</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="font-bold text-indigo-650">Hours:</span>

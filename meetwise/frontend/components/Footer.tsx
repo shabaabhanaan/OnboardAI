@@ -37,7 +37,7 @@ export const Footer: React.FC = () => {
                 <Twitter className="w-4 h-4" />
               </a>
               <a 
-                href="mailto:support@codereporeach.com" 
+                href="mailto:info.zeoraz@gmail.com" 
                 className="p-2 rounded-lg bg-gray-50 dark:bg-gray-900 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                 aria-label="Email support"
               >
