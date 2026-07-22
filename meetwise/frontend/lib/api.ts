@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+// MongoDB + JWT auth layer — replaces Supabase client
 
 export interface ActionItem {
     task: string;
@@ -20,206 +20,115 @@ export interface OnboardingData {
     dependency_graph?: string;
 }
 
+// ---------- Token helpers ----------
+
+const TOKEN_KEY = 'onboardai_token';
+
+function getToken(): string | null {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem(TOKEN_KEY);
+}
+
+function setToken(token: string) {
+    localStorage.setItem(TOKEN_KEY, token);
+}
+
+function clearToken() {
+    localStorage.removeItem(TOKEN_KEY);
+}
+
+/** Build Authorization header from stored JWT */
+function authHeaders(): Record<string, string> {
+    const token = getToken();
+    return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+// ---------- Auth ----------
+
 export const auth = {
     register: async (username: string, email: string, password: string, plan: string = 'free') => {
-        const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-                data: {
-                    username,
-                    plan,
-                },
-            },
+        const res = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, email, password, plan }),
         });
 
-        if (error) throw error;
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Registration failed');
 
-        // Create profile
-        const { error: profileError } = await supabase
-            .from('profiles')
-            .insert([{ id: data.user?.id, username, email, plan }]);
-
-        if (profileError) console.error('Error creating profile:', profileError);
-
-        // Send welcome email 
-        fetch('/api/welcome', {
-            method: 'POST',
-            body: JSON.stringify({ email, username }),
-            headers: { 'Content-Type': 'application/json' }
-        }).catch(err => console.error('Failed to trigger welcome email:', err));
-
+        setToken(data.token);
         return data;
     },
 
     login: async (email: string, password: string) => {
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
+        const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
         });
 
-        if (error) throw error;
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Login failed');
+
+        setToken(data.token);
         return data;
     },
 
     logout: async () => {
-        const { error } = await supabase.auth.signOut();
-        if (error) throw error;
+        clearToken();
     },
 
     getUser: async () => {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        if (error) throw error;
-        if (!user) return null;
+        const token = getToken();
+        if (!token) return null;
 
-        let { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single();
+        const res = await fetch('/api/auth/me', {
+            headers: { ...authHeaders() },
+        });
 
-        if (!profile) {
-            // Auto-create profile for social login users
-            const { data: newProfile, error: insertError } = await supabase
-                .from('profiles')
-                .insert([{
-                    id: user.id,
-                    username: user.user_metadata?.full_name || user.email?.split('@')[0],
-                    email: user.email,
-                    plan: 'free'
-                }])
-                .select()
-                .single();
-
-            if (insertError) console.error('Error auto-creating profile:', insertError);
-            profile = newProfile;
+        if (!res.ok) {
+            if (res.status === 401) {
+                clearToken();
+                return null;
+            }
+            throw new Error('Failed to fetch user');
         }
 
-        return {
-            ...user,
-            ...profile,
-            username: user.user_metadata?.username || profile?.username || user.user_metadata?.full_name,
-            plan: user.user_metadata?.plan || profile?.plan || 'free',
-        };
-    },
-
-    signInWithGoogle: async () => {
-        const { data, error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-                redirectTo: `${window.location.origin}/dashboard`,
-            },
-        });
-        if (error) throw error;
-        return data;
-    },
-
-    signInWithFacebook: async () => {
-        const { data, error } = await supabase.auth.signInWithOAuth({
-            provider: 'facebook',
-            options: {
-                redirectTo: `${window.location.origin}/dashboard`,
-            },
-        });
-        if (error) throw error;
-        return data;
-    },
-
-    signInWithGithub: async () => {
-        const { data, error } = await supabase.auth.signInWithOAuth({
-            provider: 'github',
-            options: {
-                redirectTo: `${window.location.origin}/dashboard`,
-                scopes: 'repo',
-            },
-        });
-        if (error) throw error;
-        return data;
+        const data = await res.json();
+        return data.user;
     },
 };
 
+// ---------- Session helpers ----------
+
+/** Returns the stored JWT token (or null). Used by payment components. */
 export const getSession = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session;
+    const token = getToken();
+    if (!token) return null;
+    // Return an object shaped similarly to what components expect
+    return { access_token: token };
 };
 
-// For backward compatibility with existing components
-// Note: This is now async, so components need to be updated
 export const isAuthenticated = async (): Promise<boolean> => {
-    const session = await getSession();
-    return !!session;
+    return !!getToken();
 };
 
-// Onboardings API
+// ---------- Onboardings API ----------
+
 export const onboardings = {
     create: async (title: string, notes: string, files?: Array<{ path: string; content: string }>) => {
-        // 1. Get current user and check plan limits
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('Not authenticated');
-
-        // Get user profile to check plan
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('plan')
-            .eq('id', user.id)
-            .single();
-
-        // Check usage limits for free plan
-        if (profile?.plan === 'free') {
-            const { count } = await supabase
-                .from('onboardings')
-                .select('*', { count: 'exact', head: true })
-                .eq('user_id', user.id);
-
-            if (count !== null && count >= 1) {
-                throw new Error('PLAN_LIMIT_REACHED: Free plan allows only 1 onboarding. Please upgrade to Pro or Team plan for unlimited onboardings.');
-            }
-        }
-
-        // 2. Process with AI securely via backend route
-        const onboardResponse = await fetch('/api/onboard', {
+        const res = await fetch('/api/onboardings', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, notes })
+            headers: { 'Content-Type': 'application/json', ...authHeaders() },
+            body: JSON.stringify({ title, notes, files }),
         });
-        if (!onboardResponse.ok) {
-            const errData = await onboardResponse.json().catch(() => ({}));
-            throw new Error(errData.error || 'Failed to generate onboarding guide from AI server');
-        }
-        const aiResult: OnboardingData = await onboardResponse.json();
 
-        // 3. Insert into Supabase
-        const { data, error } = await supabase
-            .from('onboardings')
-            .insert([{
-                title,
-                notes,
-                summary: aiResult.summary,
-                key_points: aiResult.key_points || [],
-                action_items: (aiResult.action_items || []).map(item => ({ ...item, completed: false })),
-                health_audit: aiResult.health_audit || {},
-                dependency_graph: aiResult.dependency_graph || "",
-                user_id: user.id
-            }])
-            .select()
-            .single();
-
-        if (error) throw error;
-
-        // 4. Save indexed codebase files if provided
-        if (files && files.length > 0) {
-            const filesToInsert = files.map(file => ({
-                onboarding_id: data.id,
-                path: file.path,
-                content: file.content
-            }));
-            const { error: filesError } = await supabase
-                .from('codebase_files')
-                .insert(filesToInsert);
-
-            if (filesError) {
-                console.error("Error inserting codebase files:", filesError);
+        const data = await res.json();
+        if (!res.ok) {
+            if (data.error?.includes('PLAN_LIMIT_REACHED')) {
+                throw new Error(data.error);
             }
+            throw new Error(data.error || 'Failed to create onboarding');
         }
 
         return data;
@@ -234,104 +143,84 @@ export const onboardings = {
     },
 
     list: async () => {
-        const { data, error } = await supabase
-            .from('onboardings')
-            .select('*')
-            .order('created_at', { ascending: false });
+        const res = await fetch('/api/onboardings', {
+            headers: { ...authHeaders() },
+        });
 
-        if (error) throw error;
-        // Map action items for frontend compatibility if needed
-        return data.map(m => ({
-            ...m,
-            action_items: m.action_items?.map((item: ActionItem) => ({
-                ...item,
-                task: item.task || (item as any).description // Map description to task
-            }))
-        }));
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to list onboardings');
+        return data;
     },
 
     get: async (id: string) => {
-        const { data, error } = await supabase
-            .from('onboardings')
-            .select('*')
-            .eq('id', id)
-            .single();
+        const res = await fetch(`/api/onboardings/${id}`, {
+            headers: { ...authHeaders() },
+        });
 
-        if (error) throw error;
-
-        // Map action items for frontend compatibility
-        return {
-            ...data,
-            action_items: data.action_items?.map((item: ActionItem) => ({
-                ...item,
-                task: item.task || (item as any).description
-            }))
-        };
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to get onboarding');
+        return data;
     },
 
     delete: async (id: string) => {
-        const { error } = await supabase
-            .from('onboardings')
-            .delete()
-            .eq('id', id);
+        const res = await fetch(`/api/onboardings/${id}`, {
+            method: 'DELETE',
+            headers: { ...authHeaders() },
+        });
 
-        if (error) throw error;
+        if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.error || 'Failed to delete onboarding');
+        }
     },
 
     updateActionItems: async (id: string, actionItems: ActionItem[]) => {
-        const { data, error } = await supabase
-            .from('onboardings')
-            .update({ action_items: actionItems })
-            .eq('id', id)
-            .select()
-            .single();
+        const res = await fetch(`/api/onboardings/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', ...authHeaders() },
+            body: JSON.stringify({ action_items: actionItems }),
+        });
 
-        if (error) throw error;
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to update action items');
         return data;
     },
 
     getSyncLogs: async (onboardingId: string) => {
-        const { data, error } = await supabase
-            .from('sync_logs')
-            .select('*')
-            .eq('onboarding_id', onboardingId)
-            .order('created_at', { ascending: false });
+        const res = await fetch(`/api/onboardings/${onboardingId}/sync-logs`, {
+            headers: { ...authHeaders() },
+        });
 
-        if (error) throw error;
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to get sync logs');
         return data;
     },
 
     getCodeReviews: async (onboardingId: string) => {
-        const { data, error } = await supabase
-            .from('code_reviews')
-            .select('*')
-            .eq('onboarding_id', onboardingId)
-            .order('created_at', { ascending: false });
+        const res = await fetch(`/api/onboardings/${onboardingId}/reviews`, {
+            headers: { ...authHeaders() },
+        });
 
-        if (error) throw error;
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to get code reviews');
         return data;
     },
 
     createCodeReview: async (onboardingId: string, filename: string, codeSnippet: string, reviewFeedback: any) => {
-        const { data, error } = await supabase
-            .from('code_reviews')
-            .insert([{
-                onboarding_id: onboardingId,
-                filename,
-                code_snippet: codeSnippet,
-                review_feedback: reviewFeedback
-            }])
-            .select()
-            .single();
+        const res = await fetch(`/api/onboardings/${onboardingId}/reviews`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...authHeaders() },
+            body: JSON.stringify({ filename, code_snippet: codeSnippet, review_feedback: reviewFeedback }),
+        });
 
-        if (error) throw error;
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to create code review');
         return data;
     },
 };
 
 // Keep summaries alias for backwards compatibility during migration
 export const summaries = onboardings;
-
 
 
 // Helper to get Data URL from File

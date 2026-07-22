@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import connectDB from '@/lib/mongodb';
+import User from '@/models/User';
+import { getUserFromHeader } from '@/lib/jwt';
 
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
 const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
@@ -37,42 +39,30 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Order ID is required" }, { status: 400 });
         }
 
-        // 1. Verify User Session Token
+        // 1. Verify User via JWT
         const authHeader = req.headers.get("Authorization");
-        if (!authHeader) {
-            return NextResponse.json({ error: "Missing Authorization header" }, { status: 401 });
-        }
-        const token = authHeader.replace("Bearer ", "");
-
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder';
-        const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey;
-        
-        // Auth client to verify user identity
-        const authSupabase = createClient(supabaseUrl, supabaseAnonKey);
-        const { data: { user }, error: authError } = await authSupabase.auth.getUser(token);
-        if (authError || !user) {
+        const decoded = getUserFromHeader(authHeader);
+        if (!decoded) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        // Service client to update database bypass RLS
-        const serviceSupabase = createClient(supabaseUrl, supabaseServiceKey);
+        await connectDB();
 
         // 2. Handle Mock Order
         if (isMock || !PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
             if (typeof orderId === 'string' && orderId.startsWith('MOCK-PAYPAL-')) {
-                // Perform database update for mock mode
-                const { error: updateError } = await serviceSupabase
-                    .from('profiles')
-                    .update({ plan: 'pro' })
-                    .eq('id', user.id);
+                // Upgrade user plan in MongoDB
+                const updateResult = await User.findByIdAndUpdate(
+                    decoded.userId,
+                    { plan: 'pro' },
+                    { new: true }
+                );
 
-                if (updateError) {
-                    console.error("Mock Upgrade Error:", updateError);
-                    throw new Error(`Database update failed: ${updateError.message}`);
+                if (!updateResult) {
+                    throw new Error('User not found for plan upgrade');
                 }
 
-                console.log(`User ${user.id} upgraded to Pro via PayPal Mock Mode`);
+                console.log(`User ${decoded.userId} upgraded to Pro via PayPal Mock Mode`);
                 return NextResponse.json({ success: true, status: "COMPLETED", isMock: true });
             } else {
                 return NextResponse.json({ error: "Invalid mock transaction" }, { status: 400 });
@@ -98,27 +88,27 @@ export async function POST(req: Request) {
         const captureData = await captureRes.json();
 
         if (captureData.status === 'COMPLETED') {
-            // Verify custom_id matches user.id to prevent spoofing
+            // Verify custom_id matches user to prevent spoofing
             const purchaseUnit = captureData.purchase_units?.[0];
             const customId = purchaseUnit?.payments?.captures?.[0]?.custom_id || purchaseUnit?.custom_id;
 
-            if (customId !== user.id) {
-                console.error(`User ID mismatch: order custom_id=${customId}, session user.id=${user.id}`);
+            if (customId !== decoded.userId) {
+                console.error(`User ID mismatch: order custom_id=${customId}, session user.id=${decoded.userId}`);
                 return NextResponse.json({ error: "Payment verification failed: User mismatch" }, { status: 400 });
             }
 
-            // Upgrade User Plan in database
-            const { error: dbError } = await serviceSupabase
-                .from('profiles')
-                .update({ plan: 'pro' })
-                .eq('id', user.id);
+            // Upgrade User Plan in MongoDB
+            const updateResult = await User.findByIdAndUpdate(
+                decoded.userId,
+                { plan: 'pro' },
+                { new: true }
+            );
 
-            if (dbError) {
-                console.error("DB Upgrade Error:", dbError);
-                throw new Error(`Payment captured but user upgrade failed: ${dbError.message}`);
+            if (!updateResult) {
+                throw new Error('Payment captured but user upgrade failed: User not found');
             }
 
-            console.log(`User ${user.id} upgraded to Pro via PayPal Order ${orderId}`);
+            console.log(`User ${decoded.userId} upgraded to Pro via PayPal Order ${orderId}`);
             return NextResponse.json({ success: true, status: "COMPLETED", isMock: false });
         }
 

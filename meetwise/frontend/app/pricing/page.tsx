@@ -5,7 +5,6 @@ import { Check, Sparkles, User as UserIcon, Loader2 } from "lucide-react";
 import PayHereButton from "@/components/PayHereButton";
 import PayPalButton from "@/components/PayPalButton";
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
 import { auth } from "@/lib/api";
 import { useAuth } from "@/components/auth-provider";
 import { Logo } from "@/components/Logo";

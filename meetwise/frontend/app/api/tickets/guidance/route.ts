@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import connectDB from '@/lib/mongodb';
+import CodebaseFile from '@/models/CodebaseFile';
 
 export async function POST(req: Request) {
     try {
@@ -14,20 +15,17 @@ export async function POST(req: Request) {
         let codeContext = "";
         if (onboardingId) {
             try {
-                const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-                const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder';
-                const supabase = createClient(supabaseUrl, supabaseAnonKey);
+                await connectDB();
 
-                const { data: dbFiles } = await supabase
-                    .from('codebase_files')
-                    .select('path, content')
-                    .eq('onboarding_id', onboardingId);
+                const dbFiles = await CodebaseFile.find({ onboardingId })
+                    .select('path content')
+                    .lean();
 
                 if (dbFiles && dbFiles.length > 0) {
                     const selectSystemPrompt = `You are a helper bot. Given a task/ticket title and description and a list of file paths in a codebase, select the top 3 files (by their exact paths) that are most likely to need modification or contain logic related to solving this ticket.
 Return ONLY a valid JSON array of strings containing the selected file paths, e.g. ["src/components/Navbar.tsx", "src/styles/globals.css"]. Do not include markdown formatting or explanation.`;
 
-                    const selectUserPrompt = `Ticket: "${ticketTitle}"\nDescription: "${ticketDescription}"\n\nCodebase File Paths:\n${dbFiles.map(f => f.path).join("\n")}`;
+                    const selectUserPrompt = `Ticket: "${ticketTitle}"\nDescription: "${ticketDescription}"\n\nCodebase File Paths:\n${dbFiles.map((f: any) => f.path).join("\n")}`;
 
                     const selectRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                         method: "POST",
@@ -55,9 +53,9 @@ Return ONLY a valid JSON array of strings containing the selected file paths, e.
 
                         if (Array.isArray(selectedPaths)) {
                             selectedPaths.forEach(path => {
-                                const file = dbFiles.find(f => f.path === path);
+                                const file = dbFiles.find((f: any) => f.path === path);
                                 if (file) {
-                                    codeContext += `\n\n--- FILE: ${file.path} ---\n${file.content}`;
+                                    codeContext += `\n\n--- FILE: ${(file as any).path} ---\n${(file as any).content}`;
                                 }
                             });
                         }

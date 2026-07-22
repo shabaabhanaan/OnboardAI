@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getUserFromHeader } from '@/lib/jwt';
 
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
 const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
@@ -31,19 +31,10 @@ async function getPayPalAccessToken() {
 
 export async function POST(req: Request) {
     try {
-        // 1. Verify User Session Token
+        // 1. Verify User via JWT
         const authHeader = req.headers.get("Authorization");
-        if (!authHeader) {
-            return NextResponse.json({ error: "Missing Authorization header" }, { status: 401 });
-        }
-        const token = authHeader.replace("Bearer ", "");
-
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder';
-        const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-        if (authError || !user) {
+        const decoded = getUserFromHeader(authHeader);
+        if (!decoded) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
@@ -75,7 +66,7 @@ export async function POST(req: Request) {
                             value: '19.00',
                         },
                         description: 'OnboardAI Pro Plan subscription',
-                        custom_id: user.id, // Store user ID in custom_id to match during capture
+                        custom_id: decoded.userId, // Store user ID in custom_id to match during capture
                     },
                 ],
             }),

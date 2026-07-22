@@ -2,7 +2,6 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { auth } from "@/lib/api";
-import { supabase } from "@/lib/supabase";
 
 interface AuthContextType {
     user: any | null;
@@ -40,22 +39,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     useEffect(() => {
-        // Initial load
+        // Initial load — check JWT token on mount
         refreshUser();
-
-        // Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-                refreshUser();
-            } else if (event === 'SIGNED_OUT') {
-                setUser(null);
-                setLoading(false);
-            }
-        });
-
-        return () => {
-            subscription.unsubscribe();
-        };
     }, []);
 
     return (

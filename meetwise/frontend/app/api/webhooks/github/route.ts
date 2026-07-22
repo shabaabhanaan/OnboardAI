@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder';
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import connectDB from '@/lib/mongodb';
+import Onboarding from '@/models/Onboarding';
+import SyncLog from '@/models/SyncLog';
 
 export async function POST(req: Request) {
     try {
@@ -16,11 +14,12 @@ export async function POST(req: Request) {
             const commits = body.commits;
             const headCommit = body.head_commit;
 
+            await connectDB();
+
             // 1. Find matching onboarding guides by URL
-            const { data: onboardingList } = await supabase
-                .from('onboardings')
-                .select('id, title, notes, action_items')
-                .ilike('notes', `%${repoUrl}%`);
+            const onboardingList = await Onboarding.find({
+                notes: { $regex: repoUrl, $options: 'i' }
+            }).select('title notes action_items').lean();
 
             if (onboardingList && onboardingList.length > 0) {
                 const commitMessages = commits.map((c: any) => c.message).join('\n');
@@ -28,7 +27,7 @@ export async function POST(req: Request) {
                 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
                 
                 for (const guide of onboardingList) {
-                    const tasks = guide.action_items || [];
+                    const tasks = (guide as any).action_items || [];
                     let completedIndices: number[] = [];
 
                     // 2. Query AI to match commit messages to checklist tasks semantically
@@ -79,25 +78,24 @@ Return ONLY a valid JSON array of numbers indicating the 0-indexed indices of th
                         return item;
                     });
 
-                    // Update onboarding guide in Supabase
-                    await supabase
-                        .from('onboardings')
-                        .update({ action_items: updatedActionItems })
-                        .eq('id', guide.id);
+                    // Update onboarding in MongoDB
+                    await Onboarding.findByIdAndUpdate((guide as any)._id, {
+                        action_items: updatedActionItems
+                    });
 
                     // 4. Log the webhook trigger sync event
                     const autoCompletedTasksText = completedIndices.length > 0 
                         ? `Auto-completed ${completedIndices.length} tasks: ${completedIndices.map(idx => `"${tasks[idx]?.task}"`).join(', ')}`
                         : "No new tasks matched the pushed commit messages.";
 
-                    await supabase.from('sync_logs').insert([{
-                        onboarding_id: guide.id,
+                    await SyncLog.create({
+                        onboardingId: (guide as any)._id,
                         event: `GitHub Push on ${branch}`,
                         branch: branch,
-                        commit_hash: headCommit?.id?.substring(0, 7) || 'unknown',
+                        commitHash: headCommit?.id?.substring(0, 7) || 'unknown',
                         status: 'success',
                         details: `Sync triggered successfully. Commit msg: "${headCommit?.message || 'No message'}". ${autoCompletedTasksText}`
-                    }]);
+                    });
                 }
             }
 
