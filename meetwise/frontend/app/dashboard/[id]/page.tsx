@@ -479,8 +479,8 @@ export default function MeetingDetailPage() {
             return {
                 severity: "High",
                 impact: "Developers face runtime errors or database connection failures when key credentials are not outlined.",
-                context: "References to process.env variables (Supabase URL, Anon Key, OpenRouter) exist but no .env.example file exists.",
-                template: `# Environment variables template\nNEXT_PUBLIC_SUPABASE_URL=your_supabase_url\nNEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key\nNEXT_PUBLIC_OPENROUTER_API_KEY=your_openrouter_api_key`
+                context: "References to process.env variables (MongoDB URI, JWT Secret, OpenRouter) exist but no .env.example file exists.",
+                template: `# Environment variables template\nMONGODB_URI=your_mongodb_uri\nJWT_SECRET=your_jwt_secret\nOPENROUTER_API_KEY=your_openrouter_api_key`
             };
         }
         if (text.includes("test") || text.includes("testing")) {
@@ -516,13 +516,13 @@ export default function MeetingDetailPage() {
         }
         if (text.includes("database") || text.includes("connection") || text.includes("query") || text.includes("day 2")) {
             return {
-                objective: "Locate Supabase or standard database pool configs, write queries, and check connection logs.",
+                objective: "Locate or standard database pool configs, write queries, and check connection logs.",
                 instructions: [
-                    "Open database connector files (like database/connection.js or supabase/schema.sql).",
-                    "Verify local variables: ensure supabase keys exist in .env.local.",
-                    "Execute query: write a basic SELECT statement inside your route to fetch active records."
+                    "Open database connector files (like lib/mongodb.ts or models/User.ts).",
+                    "Verify local variables: ensure MONGODB_URI exists in .env.local.",
+                    "Run local test connection to confirm database access."
                 ],
-                files: ["database/connection.js", "supabase/schema.sql", ".env.local"],
+                files: ["lib/mongodb.ts", "models/User.ts", ".env.local"],
                 code: `-- Verify database connection:\nSELECT 1;\n\n-- Create example table:\nCREATE TABLE test_connection (\n  id SERIAL PRIMARY KEY,\n  checked_at TIMESTAMP DEFAULT NOW()\n);`
             };
         }

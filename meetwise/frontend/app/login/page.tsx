@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Mail, Lock, Sparkles, Eye, EyeOff } from "lucide-react";
 import { auth } from "@/lib/api";
 import { Logo } from "@/components/Logo";
+import GoogleButton from "@/components/GoogleButton";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -182,8 +183,18 @@ export default function LoginPage() {
                             {loading ? "Signing in..." : "Login"}
                         </button>
 
+                        {/* Divider */}
+                        <div className="relative my-4">
+                            <div className="absolute inset-0 flex items-center">
+                                <div className="w-full border-t border-gray-100 dark:border-gray-800/80"></div>
+                            </div>
+                            <div className="relative flex justify-center text-xs">
+                                <span className="px-3 bg-white dark:bg-gray-950 text-gray-400 uppercase tracking-wider font-extrabold text-[9px]">Or continue with</span>
+                            </div>
+                        </div>
 
-
+                        {/* Google OAuth Login Button */}
+                        <GoogleButton onError={(msg) => setError(msg)} />
                     </form>
 
                     {/* Register Link */}

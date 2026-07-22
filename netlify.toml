@@ -1,4 +1,5 @@
 [build]
+  base = "meetwise/frontend"
   command = "npm run build"
   publish = ".next"
 

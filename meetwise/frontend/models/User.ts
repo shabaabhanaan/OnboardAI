@@ -14,7 +14,7 @@ const UserSchema = new Schema<IUser>(
     {
         username: { type: String, required: true, unique: true, trim: true },
         email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-        password: { type: String, required: true },
+        password: { type: String, required: false },
         plan: { type: String, enum: ['free', 'pro', 'team'], default: 'free' },
     },
     { timestamps: true }

@@ -78,6 +78,20 @@ export const auth = {
         clearToken();
     },
 
+    loginWithGoogle: async (credential: string) => {
+        const res = await fetch('/api/auth/google', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ credential }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Google login failed');
+
+        setToken(data.token);
+        return data;
+    },
+
     getUser: async () => {
         const token = getToken();
         if (!token) return null;
